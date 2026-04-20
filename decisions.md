@@ -81,6 +81,7 @@ Microsoft.WindowsTerminal
 Microsoft.PowerShell
 Microsoft.PowerToys
 GitHub.cli
+jqlang.jq
 ```
 
 ### 日常應用
