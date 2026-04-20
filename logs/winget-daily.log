@@ -1,0 +1,52 @@
+=== installing 7zip.7zip ===
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |                                                                                                                           ██████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   592 KB / 1.57 MB  ██████████████████████████████  1.57 MB / 1.57 MB
+Successfully verified installer hash
+Starting package install...
+The installer will request to run as administrator, expect a prompt.
+   -    \    |    /    -    \    |    /    -                                                                                                                         Successfully installed
+
+=== installing Notepad++.Notepad++ ===
+   -    \    |    /    -    \                                                                                                                           ████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  1024 KB / 6.55 MB  ██████████████████████████████  6.55 MB / 6.55 MB
+Successfully verified installer hash
+Starting package install...
+The installer will request to run as administrator, expect a prompt.
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /                                                                                                                         Successfully installed
+
+=== installing VideoLAN.VLC ===
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |                                                                                                                           ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  1024 KB / 43.8 MB  ██████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  10.0 MB / 43.8 MB  ███████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  17.0 MB / 43.8 MB  ████████████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒  24.0 MB / 43.8 MB  █████████████████████▒▒▒▒▒▒▒▒▒  31.0 MB / 43.8 MB  █████████████████████████▒▒▒▒▒  37.8 MB / 43.8 MB  ██████████████████████████████  43.8 MB / 43.8 MB  ██████████████████████████████  43.8 MB / 43.8 MB
+Successfully verified installer hash
+Starting package install...
+The installer will request to run as administrator, expect a prompt.
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |                                                                                                                         Successfully installed
+
+=== installing Adobe.Acrobat.Reader.64-bit ===
+Successfully verified installer hash
+Starting package install...
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -                                                                                                                         Installer failed with exit code: 3010
+Installer log is available at: C:\Users\Wayne\AppData\Local\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\DiagOutputDir\WinGet-Adobe.Acrobat.Reader.64-bit.26.001.21431-2026-04-20-08-10-15.231.log
+Restart your PC to finish installation.
+
+=== installing Discord.Discord ===
+Downloading https://stable.dl2.discordapp.net/distro/app/stable/win/x64/1.0.9233/DiscordSetup.exe
+   -    \    |    /    -                                                                                                                           ██▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  10.0 MB /  117 MB  ██████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  25.1 MB /  117 MB  ██████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  41.1 MB /  117 MB  █████████████▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒  54.1 MB /  117 MB  █████████████████▒▒▒▒▒▒▒▒▒▒▒▒▒  67.1 MB /  117 MB  ███████████████████▒▒▒▒▒▒▒▒▒▒▒  77.1 MB /  117 MB  ██████████████████████▒▒▒▒▒▒▒▒  89.1 MB /  117 MB  █████████████████████████▒▒▒▒▒   101 MB /  117 MB  ████████████████████████████▒▒   112 MB /  117 MB  ██████████████████████████████   117 MB /  117 MB
+Successfully verified installer hash
+Starting package install...
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |                                                                                                                         Successfully installed
+
+=== installing Line.Line ===
+   -                                                                                                                         No package found matching input criteria.
+
+=== installing TeamViewer.TeamViewer ===
+Successfully verified installer hash
+Extracting archive...
+Successfully extracted archive
+Starting package install...
+   -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /    -    \    |    /                                                                                                                         Successfully installed
+
+=== installing Valve.Steam ===
+   -    \    |                                                                                                                           ██████████████████████████████  2.27 MB / 2.27 MB
+Successfully verified installer hash
+Starting package install...
+The installer will request to run as administrator, expect a prompt.
+   -    \    |    /    -    \    |    /    -    \    |    /                                                                                                                         Successfully installed
+
