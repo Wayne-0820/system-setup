@@ -181,3 +181,68 @@ Copy-Item D:\Recovery\snapshot-YYYY-MM-DD\PROFILE.ps1 $PROFILE
 - **API keys**:安全考量,只記服務清單,值手動輸入
 - **DaVinci 專案 / 素材**:`D:\Media\` 與 NAS
 - **`.env` 檔**:NAS 整包備份
+
+---
+
+## 踩坑紀錄(經驗庫)
+
+> 這是 2026 重灌當次踩到的實戰坑。未來重灌(或給別人看)前先掃一遍,能省掉半天到一天。
+
+### Windows 基礎
+
+- **Arrow Lake-HX(Core Ultra 9 275HX)剛裝完系統驅動全缺**
+  - 解法:Windows Update **跑到底** + 點「選用更新」全裝 + 手動裝 Intel Chipset
+  - 音訊裝置要靠上面這組流程才會出現。**單裝 LAN / WirelessLan 驅動沒用**(名字類似容易誤判成音效相關,別被騙)
+- **Home → Pro 升級要趁裝軟體少的時候做**,越晚升級風險越高(註冊表/授權狀態越複雜越容易卡)
+- **PowerShell 預設禁止執行腳本**,npm 會跑不動:
+  ```powershell
+  Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+  ```
+
+### 環境變數
+
+- **`[Environment]::SetEnvironmentVariable(..., 'User')` 寫 `%VAR%` 不會展開**
+  - 預設寫入 REG_SZ,`%USERPROFILE%` 會被存成字面字串
+  - 解法:直接寫絕對路徑(如 `C:\Users\Wayne\...`),不要依賴 `%VAR%`
+  - 如果非用可展開不可,要手動寫 REG_EXPAND_SZ(多半不值得這個麻煩)
+- **DaVinci 三個變數都要設**:`RESOLVE_SCRIPT_API`、`RESOLVE_SCRIPT_LIB`、`PYTHONPATH`(缺一個就連不進 Resolve)
+
+### Office 2021 Professional Plus
+
+- **版本代號是 `ProPlus2021Retail`**,**不是** LTSC(別照網路教學硬套 LTSC XML)
+- 「家用版還是 Pro」兌換頁面會**同時**顯示 Office 與 Microsoft 365
+  - **只點 Office,別碰 365** —— UX 陷阱,點下去會被訂閱綁架
+- **要砍 Outlook / Publisher / Access → 必須用 ODT**(Office Deployment Tool)
+  - **不能**用「設定 → 應用程式 → 修改」(那個介面對 Retail 通道根本動不了這幾個元件)
+- **ODT 的 remove XML 不能寫 `Channel="Current"`**
+  - 那是 365 訂閱制的 Channel,會觸發補全安裝,反而把砍掉的東西裝回來
+  - **正確做法**:移除 Channel 參數,讓 ODT 沿用現有安裝設定
+- **用記事本存 `remove.xml` 會被偷加 `.txt` 副檔名** → 變成 `remove.xml.txt`,ODT 找不到
+  - 解法:直接用 PowerShell `Out-File` 建 XML,避開記事本
+- **裝完要手動關 OneDrive / Teams / Edge 背景啟動項**(工作管理員 → 啟動應用程式)
+- **OneDrive 要用 `winget uninstall Microsoft.OneDrive` 才徹底**(GUI 移除殘留多)
+
+### DaVinci Resolve Studio 20
+
+- **Blackmagic 下載頁有兩個版本**:
+  - 「DaVinci Resolve」= 免費版
+  - 「DaVinci Resolve Studio」= 付費版
+  - **檔名沒有 `Studio` 關鍵字 = 下錯版本**,會啟動不了序號
+- **Windows 下載顯示 "Windows x86" 是命名歷史包袱**,實際是 64-bit,別被嚇到去找別的
+- **DaVinci 20 改名**:Database → **Project Library**
+- **Gallery 路徑設定位置改了**:Project Settings → **Working Folders**(舊版在 Preferences)
+- **Default Preset 是 Per-Library 的,不是全域**
+  - 換新 Library 後路徑會跑回 C 槽,要在新 Library 重設一次
+- **Working Folders 4 個路徑都要設 D 槽**:Project media、Proxy、Cache、Gallery
+  - 設好後右上 `⋯` → **Set Current Settings as Default Preset**
+- **序號卡兌換 → 啟動精靈第一次不會自動跳**
+  - 要從選單 DaVinci Resolve → **License...** 手動觸發
+- **Blackmagic 永久授權沒有網頁管理介面**(網頁只能看訂閱)
+  - 啟用狀態要透過客服解鎖
+  - **未來重灌前一定要先 Deactivate**,否則序號會卡在舊機器
+
+### 安裝順序補充
+
+- **Armoury Crate**:在 NVIDIA 驅動之後、開發工具之前裝(會搶 OSD / 背景服務註冊順序)
+- **ComfyUI portable**:解壓後保留原本巢狀結構(`ComfyUI_portable\ComfyUI_windows_portable\`),**不要拍平**(裡面路徑是相對寫死的)
+- **Steam 遊戲裝 D 槽**:Steam → 設定 → 儲存空間 → 加入 `D:\Games\Steam` 為預設 Library(先設再裝遊戲,裝完才改要搬資料很慢)
