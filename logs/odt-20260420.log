@@ -1,0 +1,58 @@
+=== 2026-04-20 ODT reconfigure: remove Teams/Outlook/Publisher/Access/OneDrive/Groove/Lync ===
+
+Office install state before:
+  ProductReleaseIds : ProPlus2021Retail
+  ClientCulture     : zh-tw
+  Platform          : x64
+  VersionToReport   : 16.0.19822.20182
+  UpdateChannel GUID: 492350f6-3a01-4f97-b9c0-c7c6ddf67d60  (Current)
+
+ODT version: 16.0.19822.20114 (via winget Microsoft.OfficeDeploymentTool)
+
+XML used (D:\ODT\remove-teams.xml, UTF-8 no BOM):
+<Configuration>
+  <Add OfficeClientEdition="64">
+    <Product ID="ProPlus2021Retail">
+      <Language ID="zh-tw"/>
+      <ExcludeApp ID="Outlook"/>
+      <ExcludeApp ID="Publisher"/>
+      <ExcludeApp ID="Access"/>
+      <ExcludeApp ID="Teams"/>
+      <ExcludeApp ID="OneDrive"/>
+      <ExcludeApp ID="Groove"/>
+      <ExcludeApp ID="Lync"/>
+    </Product>
+  </Add>
+  <Display Level="Full" AcceptEULA="TRUE"/>
+</Configuration>
+
+Channel attribute intentionally omitted — writing Channel="Current" on ProPlus2021Retail triggers a full reinstall instead of reconcile.
+
+Reconcile semantics (gotcha): <Add>+<ExcludeApp> with /configure treats any app NOT in ExcludeApp as "should be installed and is missing" and reinstalls it. So every prior exclusion (Outlook/Publisher/Access from earlier) must stay in the list each run, or it gets pulled back.
+
+Pre-flight:
+  - Shell elevated: True
+  - Office processes running: only OfficeClickToRun (service host, not user apps)
+  - Stop-Service ClickToRunSvc -Force  -> Stopped
+  - Start-Service ClickToRunSvc (post-configure) -> Running
+
+Command:
+  cd D:\ODT
+  .\setup.exe /configure remove-teams.xml
+  exit 0
+
+Verification:
+  C:\Program Files\Microsoft Office\root\Office16\ remaining:
+    EXCEL.EXE, ONENOTE.EXE, ONENOTEM.EXE, POWERPNT.EXE, WINWORD.EXE, excelcnv.exe
+  Removed: OUTLOOK.EXE, MSPUB.EXE, MSACCESS.EXE (+ Teams/Lync/Groove/OneDrive bundle components)
+
+Dual-version gotcha (Windows 11):
+  Teams and Outlook each ship in two forms:
+    1. Office-bundled classic (removed by ODT ExcludeApp above)
+    2. Windows 11 pre-installed MSIX/Store app (ODT cannot touch)
+  The MSIX versions stayed after ODT and had to be removed separately:
+    winget uninstall Microsoft.Teams                                 -> Successfully uninstalled
+    winget uninstall Microsoft.OutlookForWindows_8wekyb3d8bbwe       -> Successfully uninstalled
+
+Cleanup:
+  D:\ODT\ removed after successful run.

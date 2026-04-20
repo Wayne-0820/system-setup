@@ -121,11 +121,12 @@ npm i -g @anthropic-ai/claude-code
 |---|---|---|---|
 | 1 | NVIDIA Studio Driver | C | **最優先**,裝任何東西之前 |
 | 2 | Armoury Crate(ASUS 工具) | C | NVIDIA 之後、開發工具之前。裝完關掉不必要的背景服務(GameFirst、Aura 若無 RGB 周邊),關自動更新 |
-| 3 | Office 2021 企業增強版 | C | NAS 來源 |
-| 4 | DaVinci Resolve Studio | C | 裝完進 Preferences 改 Database / Cache / Gallery → `D:\Cache\Resolve`;設 `RESOLVE_SCRIPT_API` / `RESOLVE_SCRIPT_LIB` 環境變數 |
-| 5 | LDPlayer | `D:\Emulator\LDPlayer` | 重建實例時**解析度一定要跟 Ldbot config 對齊**,其他隨意 |
-| 6 | Synology Drive Client | C | 同步目標 → `D:\Sync` |
-| 7 | ComfyUI portable | `D:\Work\ComfyUI_portable` | 從 GitHub release 下 7z,`extra_model_paths.yaml` 指到 `D:\Models\sd` |
+| 3 | Google Chrome | C | winget 批次之前就要有瀏覽器(撈 NAS 檔案、看文件) |
+| 4 | Office 2021 企業增強版 | C | NAS 來源。裝完用 ODT 砍 Teams / Outlook / Publisher / Access / OneDrive / Groove / Lync(見 `logs/odt-*.log`)。Teams 等 app 有雙版本(Office bundled + Windows 11 預裝 MSIX Store),ODT 只砍 Office 那版,Store 版要另外 `winget uninstall` |
+| 5 | DaVinci Resolve Studio | C | 裝完進 Preferences 改 Database / Cache / Gallery → `D:\Cache\Resolve`;設 `RESOLVE_SCRIPT_API` / `RESOLVE_SCRIPT_LIB` 環境變數 |
+| 6 | LDPlayer | `D:\Emulator\LDPlayer` | 重建實例時**解析度一定要跟 Ldbot config 對齊**,其他隨意 |
+| 7 | Synology Drive Client | C | 同步目標 → `D:\Sync` |
+| 8 | ComfyUI portable | `D:\Work\ComfyUI_portable` | 從 GitHub release 下 7z,`extra_model_paths.yaml` 指到 `D:\Models\sd` |
 | - | Stable Diffusion WebUI Forge(選用) | `D:\Work\Forge` | 若裝,模型目錄也指到 `D:\Models\sd` |
 
 ## 資料夾結構
