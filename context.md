@@ -34,8 +34,13 @@ D:\
 ├── Media\          # 影片素材、輸出成品
 │   ├── raw\                # 生成出來的片段
 │   └── projects\           # DaVinci 專案檔
-├── Sync\           # Synology Drive
-└── Recovery\       # 重灌 manifest 家
+├── Sync-Wayne\     # Synology Drive(你的)
+├── Sync-Wife\      # Synology Drive(老婆的)
+├── Games\          # 遊戲
+│   ├── Steam\              # Steam Library(在 Steam 設定加入)
+│   └── Standalone\         # 官網下載的獨立遊戲
+├── Licenses\       # 軟體序號備份(DaVinci 等)
+└── Recovery\       # 重灌 manifest + Hasleo 映像相關
 ```
 
 ## 使用情境優先序(高到低)
@@ -44,6 +49,7 @@ D:\
 2. **Ldbot 收尾維護**:核心已完成,偶爾修 bug。詳見 `ldbot-checklist.md`
 3. **DaVinci 一般剪輯**(非 AI 流程)
 4. 一般生產力:Office、瀏覽器、通訊
+5. 休閒娛樂:Steam 遊戲 / 獨立遊戲(裝 D 槽)
 
 ## 現役專案
 
