@@ -20,7 +20,7 @@ git log HEAD..origin/main       # 應為空(無未拉取)
 
 三個都乾淨 = GitHub 上就是最新版。
 
-- [ ] `pyproject.toml`(或 `requirements.txt`)在最新 commit 裡
+- [ ] `pyproject.toml` 與 `uv.lock` 在最新 commit 裡(uv 工作流,不再用 `requirements.txt`)
 
 ### 2. 備份 gitignored 的 4 個關鍵檔案
 
@@ -61,20 +61,50 @@ winget install Git.Git astral-sh.uv
 git clone <your-ldbot-url> D:\Work\Ldbot
 cd D:\Work\Ldbot
 
-# 3. 裝依賴
+# 3. 裝依賴(uv 會讀 pyproject.toml + uv.lock,自動建 .venv)
 uv sync
-
-# 4. 還原備份的 4 個檔案(從 NAS 撈 Ldbot-secrets 到 D:\)
-Copy-Item "D:\Ldbot-secrets\admin_tool.py" "D:\Work\Ldbot\tools\"
-Copy-Item "D:\Ldbot-secrets\accounts.yaml" "D:\Work\Ldbot\"
-Copy-Item "D:\Ldbot-secrets\config.yaml" "D:\Work\Ldbot\"
-Copy-Item "D:\Ldbot-secrets\user_settings.json" "D:\Work\Ldbot\config\"
 ```
 
-5. 裝 LDPlayer → `D:\Emulator\LDPlayer`
-6. 多開管理器建實例,**解析度照 config.yaml 設定**(唯一會影響運作的項目)
-7. 手動登入遊戲帳號
-8. 跑 Ldbot
+### 4. 還原 4 個 gitignored 檔案(從 NAS 撈 Ldbot-secrets 回 D:\)
+
+| 檔案 | 還原位置 |
+|---|---|
+| `admin_tool.py` | `D:\Work\Ldbot\tools\admin_tool.py` |
+| `accounts.yaml` | `D:\Work\Ldbot\accounts.yaml`(根目錄) |
+| `config.yaml` | `D:\Work\Ldbot\config.yaml`(根目錄) |
+| `user_settings.json` | `D:\Work\Ldbot\config\user_settings.json` |
+
+```powershell
+Copy-Item "D:\Ldbot-secrets\admin_tool.py"       "D:\Work\Ldbot\tools\"
+Copy-Item "D:\Ldbot-secrets\accounts.yaml"       "D:\Work\Ldbot\"
+Copy-Item "D:\Ldbot-secrets\config.yaml"         "D:\Work\Ldbot\"
+Copy-Item "D:\Ldbot-secrets\user_settings.json"  "D:\Work\Ldbot\config\"
+```
+
+### 5. 驗證
+
+```powershell
+uv run python main.py
+```
+
+能啟動 GUI 即成功。
+
+### 6. 後續
+
+- 裝 LDPlayer → `D:\Emulator\LDPlayer`
+- 多開管理器建實例,**解析度照 config.yaml 設定**(唯一會影響運作的項目)
+- 手動登入遊戲帳號
+- 跑 Ldbot
+
+---
+
+## 踩坑紀錄
+
+### 依賴不完整(2026 重灌)
+
+- 舊 `requirements.txt` 漏了 `easyocr`,`uv sync` 過、但 `uv run python main.py` 啟動即 `ModuleNotFoundError: easyocr`
+- 已補進 `pyproject.toml` 並 commit(`6fea5fc` → 後續 commit)
+- 教訓:遷移到 uv 時先把完整依賴裝好再跑 `uv lock`,不要相信舊的 `requirements.txt`
 
 ---
 
