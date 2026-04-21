@@ -18,6 +18,7 @@
 | `comfyui-setup.md` | ComfyUI 乾淨重來策略 + 節點基礎 | 裝 ComfyUI 時 |
 | `local-models.md` | 本地 LLM 探索指南 | 裝 Ollama 時 |
 | `ldbot-checklist.md` | Ldbot 重灌前後備忘 | 重灌前 + Ldbot 重建時 |
+| `media-structure.md` | D:\Media 資料夾結構與工作流 | 第一次開剪輯專案前 |
 | `reinstall-manifest.md` | 重灌清單自動產生系統 | **全部裝完後執行一次** |
 
 ## 重灌前必做

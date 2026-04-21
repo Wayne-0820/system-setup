@@ -31,9 +31,11 @@ D:\
 ├── Cache\          # 軟體快取
 │   └── Resolve\            # DaVinci 快取 / 資料庫 / Gallery
 ├── Emulator\       # LDPlayer
-├── Media\          # 影片素材、輸出成品
-│   ├── raw\                # 生成出來的片段
-│   └── projects\           # DaVinci 專案檔
+├── Media\          # 影片素材、AI 生成、DaVinci 輸出(詳見 `media-structure.md`)
+│   ├── Projects\              # 當前進行中的剪輯專案
+│   ├── Archive\               # 已結案封存
+│   ├── Assets\                # 跨專案共用資源(Music / SFX / Fonts / LUTs / Logos)
+│   └── AI_Raw\                # AI 生成原始池(ComfyUI / FramePack / Voice / Music)
 ├── Sync-Wayne\     # Synology Drive(你的)
 ├── Sync-Wife\      # Synology Drive(老婆的)
 ├── Games\          # 遊戲
