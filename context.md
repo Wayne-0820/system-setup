@@ -1,17 +1,23 @@
-# Context
+# Context — 系統脈絡與規劃
 
-> 本文件給 Claude Code 讀。它說明硬體、使用情境、個人偏好,讓後續所有決策有共同基礎。
+> 給 Claude / Claude Code 的單一真相來源。第一次對話時讀這份。
+> 最後更新:2026-04-26
 
 ---
 
 ## 硬體
 
-- **GPU**:NVIDIA RTX 5090(24GB VRAM,筆電版)
-- **CPU**:Intel Core Ultra 9 275HX(Arrow Lake-HX,24 核)
-- **RAM**:64GB
-- **儲存**:
-  - **C 槽**:Gen4 NVMe 2TB(系統 + 軟體本體)
-  - **D 槽**:Gen5 NVMe 2TB(工作區 + 快取 + 模型 + 素材)
+- 筆電 ASUS ROG
+- CPU:Intel Core Ultra 9 275HX(Arrow Lake-HX, 24 cores)
+- GPU:NVIDIA RTX 5090 Laptop **24GB VRAM**(Blackwell sm_120)
+- RAM:64GB DDR5
+- C 槽:系統 Gen4 2TB
+- D 槽:工作 Gen5 2TB
+- OS:Windows 11 Pro
+
+**24GB VRAM 是所有 AI 決策的天花板**。同時跑大模型(qwen3:32b + Klein 9B Base 等)會爆。
+
+---
 
 ## 磁碟策略
 
@@ -21,79 +27,151 @@ C 槽只放作業系統與軟體執行檔,極簡。D 槽結構:
 D:\
 ├── Work\           # Git repos 與大型生成工具
 │   ├── Ldbot\
-│   ├── Forge\              # SD WebUI Forge(若裝)
-│   ├── ComfyUI_portable\   # ComfyUI portable 解壓位置
-│   └── creative-pipeline\  # CrewAI 編排專案
+│   ├── ComfyUI_portable\         # ComfyUI portable 解壓位置
+│   │   └── ComfyUI_windows_portable\  # 巢狀不拍平,跟官方範例對齊
+│   ├── OpenWebUI\                # Python 3.11
+│   ├── LiteLLM\                  # Python 3.11(獨立 venv,跟 OpenWebUI 分開)
+│   ├── system-setup\             # 規劃文件 repo(本文件就在這)
+│   │   ├── comfyui-workflows\    # ComfyUI workflow JSON(中文「用途定位派」命名)
+│   │   ├── sageattention_build_notes\  # SageAttention 編譯完整紀錄
+│   │   ├── *.patched             # PyTorch patches 備份
+│   │   └── *.md                  # 各份規劃文件
+│   └── creative-pipeline\        # CrewAI 編排專案(規劃中)
+│
 ├── Models\         # 模型權重
-│   ├── ollama\             # OLLAMA_MODELS 指到這
-│   ├── lmstudio\           # LM Studio 模型(若裝)
-│   └── sd\                 # SDXL / Flux / FramePack 共用
+│   ├── ollama\               # OLLAMA_MODELS 指到這
+│   └── sd\                   # SDXL / FLUX / Klein 系列共用(extra_model_paths.yaml 指向)
+│       ├── checkpoints\
+│       ├── diffusion_models\
+│       ├── clip\
+│       ├── vae\
+│       ├── loras\
+│       ├── controlnet\
+│       ├── upscale_models\
+│       ├── embeddings\
+│       └── clip_vision\
+│
 ├── Cache\          # 軟體快取
-│   └── Resolve\            # DaVinci 快取 / 資料庫 / Gallery
+│   └── Resolve\              # DaVinci 快取 / 資料庫 / Gallery
+│
 ├── Emulator\       # LDPlayer
+│
 ├── Media\          # 影片素材、AI 生成、DaVinci 輸出(詳見 `media-structure.md`)
-│   ├── Projects\              # 當前進行中的剪輯專案
-│   ├── Archive\               # 已結案封存
-│   ├── Assets\                # 跨專案共用資源(Music / SFX / Fonts / LUTs / Logos)
-│   └── AI_Raw\                # AI 生成原始池(ComfyUI / FramePack / Voice / Music)
+│   ├── Projects\             # 當前進行中的剪輯專案
+│   ├── Archive\              # 已結案封存
+│   ├── Assets\               # 跨專案共用資源(Music / SFX / Fonts / LUTs / Logos)
+│   └── AI_Raw\               # AI 生成原始池(ComfyUI / FramePack / Voice / Music)
+│
+├── tmp\            # 編譯暫存
+│   └── SageAttention\        # source 保留(233 MB,以後重編用)
+│
 ├── Sync-Wayne\     # Synology Drive(你的)
 ├── Sync-Wife\      # Synology Drive(老婆的)
 ├── Games\          # 遊戲
-│   ├── Steam\              # Steam Library(在 Steam 設定加入)
-│   └── Standalone\         # 官網下載的獨立遊戲
+│   ├── Steam\                # Steam Library(在 Steam 設定加入)
+│   └── Standalone\           # 官網下載的獨立遊戲
 ├── Licenses\       # 軟體序號備份(DaVinci 等)
 └── Recovery\       # 重灌 manifest + Hasleo 映像相關
 ```
 
+### 重要例外:LLM 類模型寫死路徑
+
+```
+D:\Work\ComfyUI_portable\ComfyUI_windows_portable\ComfyUI\models\
+└── LLavacheckpoints\         # JoyCaption / Llama(節點 hardcode 路徑,不能搬)
+```
+
+LLM 節點(如 JoyCaption)在程式碼裡寫死路徑,**不吃 `extra_model_paths.yaml`**。維持在 ComfyUI 內部。
+
+---
+
 ## 使用情境優先序(高到低)
 
-1. **AI 影像生產 pipeline**(新主軸):Claude Code + CrewAI 編排,DaVinci Studio 組裝,ComfyUI + FramePack 生成影片。詳見 `davinci-pipeline.md`
+1. **AI 影像生產 pipeline**(主軸):Claude Code + CrewAI 編排,DaVinci Studio 組裝,ComfyUI(Klein / FLUX) + FramePack 生成影片。詳見 `davinci-pipeline.md`、`comfyui-setup.md`
 2. **Ldbot 收尾維護**:核心已完成,偶爾修 bug。詳見 `ldbot-checklist.md`
 3. **DaVinci 一般剪輯**(非 AI 流程)
 4. 一般生產力:Office、瀏覽器、通訊
 5. 休閒娛樂:Steam 遊戲 / 獨立遊戲(裝 D 槽)
 
-## 現役專案
+---
 
-### Ldbot(收尾階段)
+## 工具偏好(不可違反)
 
-- LDPlayer 模擬器手遊自動化
-- 核心已完成,task-b 與 worktree 已在舊系統合併結案
-- 影像比對**只依賴解析度**,其他設定全部可隨時重建
-- 開發工具:Claude Code 單一入口
-- **舊系統路徑**:`C:\Users\Wayne\Ldbot` → **新系統路徑**:`D:\Work\Ldbot`
-- 4 個 gitignored 檔案(Firebase 密鑰、帳號、config、user settings)走 NAS 備份,詳見 `ldbot-checklist.md`
+### Python
+- **uv** per-project venv(不用 conda / pyenv / 全域 pip)
+- DaVinci scripting 綁 Python 3.10
+- Open WebUI / LiteLLM 用 3.11
+- Ldbot 用 3.12
+- ComfyUI portable 用 3.13.12 embedded(不要動)
 
-### AI 影像生產 pipeline(新主力)
+### 環境變數
+- **絕對路徑寫死**,不要用 `%VAR%`(PowerShell User scope 不展開)
+- 已設好的:`OLLAMA_MODELS`、`RESOLVE_SCRIPT_API`、`RESOLVE_SCRIPT_LIB`、`PYTHONPATH`
 
-- 目標:半自動產出劇本 → 分鏡圖 → 影片段 → 組裝成片
-- 編排:Claude Code + CrewAI(Python)
-- 組裝台:DaVinci Resolve Studio(Python 腳本控制,需 Python 3.10)
-- 生成工具:**ComfyUI**(主力,含 FramePack 首尾幀)+ 雲端 API 選擇性補強
+### Secret 管理
+- API keys 走 `.env` + `.gitignore`
+- HF Token 不貼進 AI 對話框,只放 PowerShell 環境變數
+- 持久化:NAS 加密備份
 
-## 個人偏好
+### 端口配置
+- **8080**:Open WebUI
+- **4000**:LiteLLM proxy
+- **11434**:Ollama
+- **8188**:ComfyUI
 
-- **不污染全域 PATH**:只放核心工具(Git、Node、uv、Claude Code)
-- **Per-project 環境**:Python 用 uv,每個專案獨立 `.venv`
-- **多 Python 版本並存**:DaVinci 腳本要 3.10、Ldbot 用 3.12,uv 能管
-- **符號連結保守使用**:優先用軟體原生路徑設定
-- **本次重灌不保留任何舊設定檔**:clean slate
-- **ComfyUI 乾淨重來策略**:portable 版 + Manager 管 custom node,隨時可砍重建
-- **敏感資料**:不進 Git,走 `.env` + NAS 整包備份
+新服務不要搶這幾個埠。
 
-## 資料保存策略
+---
 
-- **程式碼**:GitHub(主)+ NAS 整包備份(副)
-- **Ldbot 的 gitignored 機敏檔案**(4 個):`D:\Ldbot-secrets\` → NAS
-- **敏感資料(`.env` 等)**:NAS(NAS 本身有帳密保護)
-- **大型素材、模型備份**:NAS
-- **重灌 manifest**:GitHub(這個 repo)
+## 已完成的階段
 
-## 何時搜尋最新資訊
+### 系統建置(2026-04-19/20 重灌)
+- Windows 11 Pro + 全驅動 + Armoury Crate
+- 開發工具:Git / Node / uv / Claude Code / VS Code / PowerToys 等
+- DaVinci Resolve Studio 20(Working Folders 全 D 槽,Default Preset 已存)
+- LDPlayer 9
+- Synology Drive(Wayne + Wife 雙任務)
+- Office 2021 精簡(砍 Outlook / Publisher / Access / Teams / OneDrive / Groove / Lync)
+- Ollama + qwen3:32b
+- ComfyUI portable + Manager
+- Open WebUI + LiteLLM(三個踩坑文件化)
 
-Claude Code 執行時,以下情況**應該上網查**,不要憑記憶回答:
+### ComfyUI 工程(2026-04-25/26)
+- CUDA Toolkit 13.2 + Visual Studio 2022 Build Tools 安裝
+- SageAttention 3 Blackwell 編譯成功(9 次嘗試,6 個 patches)
+- Klein 系列模型完整下載(4B / 9B distilled / 9B Base + 對應 Qwen3 CLIP)
+- JoyCaption Beta1 下載(15.81 GB)
+- 5 個 workflow 中文命名建立完成
+- 4K 升頻流程驗證(Klein 9B Base + UltraSharp = 20.9 GB VRAM 極限)
 
-- 工具版本、下載連結、安裝指令(版本常變)
-- 具體套件的最新 API、參數(pip/npm 包更新快)
-- ComfyUI custom node 的 repo 位置(node 生態變動頻繁)
-- 本地模型的最新推薦與 tag
+---
+
+## 待推進階段
+
+### 短期
+1. Hasleo Rescue USB + 第一次 System Backup(golden image)
+2. ComfyUI 啟動圖示底圖生成 + 桌面捷徑
+3. 開始重建中國 workflow(Flux-fill / Qwen3 TTS / Kontext + ControlNet 三選一)
+
+### 中期
+1. SageAttention issue #357 修復後重編,享受完整 FP4 加速
+2. 下載 FLUX.1 Fill / Kontext / Qwen-Image-Edit / Qwen3 TTS / Whisper / Wan 2.2 系列(約 100-150 GB)
+3. 建 `D:\Work\creative-pipeline\` 跑 CrewAI
+
+### 長期
+1. CrewAI agent 編排:Writer(Sonnet API)→ Art Director → ComfyUI / FramePack / Voice → DaVinci 組裝
+2. 完整 AI 影像 pipeline 跑通
+
+---
+
+## 文件導航
+
+詳見 `README.md`。每份文件用途、何時讀:
+
+- 通用先讀:`context.md`(本文件) + `decisions.md`
+- 新對話 onboarding:`START_HERE.md`(精簡版,給執行窗口讀)
+- 任務結束時:用 `PROGRESS_TEMPLATE.md` 格式產進度報告
+
+---
+
+**最後更新**:2026-04-26
