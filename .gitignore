@@ -1,0 +1,47 @@
+# Secrets — 絕對不能進 repo
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+**/credentials.json
+**/credentials/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Node
+node_modules/
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Build / 暫存
+build/
+dist/
+*.log
+*.tmp
+
+# 個人筆記(不該分享的私人 memo)
+private-notes.txt
+private-notes.md
+TODO_personal.md
+
+# Manifest snapshot 不進 repo(留在 D:\Recovery\)
+snapshot-*/
