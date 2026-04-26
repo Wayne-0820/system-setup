@@ -70,6 +70,12 @@ Wayne 的系統建置規劃文件集,給 Claude / Claude Code 當脈絡的單一
 | `ldbot-checklist.md` | Ldbot 重灌前後備忘 | 重灌前 + Ldbot 重建時 |
 | `reinstall-manifest.md` | 重灌清單自動產生系統 + 踩坑庫 | **全部裝完後執行一次** |
 
+### 💾 備份 / 災難還原
+
+| 檔案 | 用途 | 何時讀 |
+|---|---|---|
+| `baseline-trigger.md` | 第一次 C 槽 baseline 映像觸發條件 + 完整步驟 | 何時做第一次系統映像 / 還原流程 |
+
 ---
 
 ## Repo 結構
@@ -107,10 +113,21 @@ system-setup/
 
 ---
 
+## 重灌實體資產(2026-04-26 製作)
+
+| 資產 | 位置 | 用途 |
+|---|---|---|
+| **Win11 25H2 安裝 USB** | 抽屜 / 標籤明確 | 重灌作業系統(build 26200.6584) |
+| **Hasleo Rescue USB** | 抽屜 / 標籤明確 | 緊急救援(已開機驗證) |
+| **啟動驅動包** | `D:\Recovery\Drivers\2025-08-17_essential-bootstrap-drivers\` | 重灌後第一批驅動(網卡 / Wi-Fi / IRST / Armoury) |
+| **Win11 25H2 ISO** | `D:\Recovery\Win11_25H2_*.iso` | 重做 USB 用 |
+
+---
+
 ## 重灌後啟動順序
 
 ### Phase 1:基礎系統
-1. Windows 11 乾淨安裝
+1. Windows 11 乾淨安裝(從 USB)
 2. NVIDIA Studio Driver(官網下載)
 3. **Armoury Crate**(ASUS 官網,裝完清理背景服務)
 4. `winget install Git.Git OpenJS.NodeJS.LTS`
