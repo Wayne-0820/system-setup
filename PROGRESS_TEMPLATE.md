@@ -29,6 +29,8 @@
 
 ## 2. 環境變更
 
+> ⚠️ **列「新增」前先對照** system-setup 既有 MD(尤其 `comfyui-setup.md` / `decisions.md` / `reinstall-manifest.md` / `tools/README.md`),**釐清「前次對話已建立」 vs 「本次新增」**。不能只憑這次對話脈絡推斷,否則會誤把既有檔案標成新增,主窗口整合時會出錯。
+
 ### 新增 / 修改的檔案
 
 格式:`絕對路徑 — 動作 — 說明`
@@ -150,4 +152,4 @@ D:\Work\system-setup\start_comfyui.bat
 
 ---
 
-**最後更新**:2026-04-26
+**最後更新**:2026-04-27

@@ -159,7 +159,27 @@ Copy-Item D:\Recovery\snapshot-YYYY-MM-DD\PROFILE.ps1 $PROFILE
 # 6. 環境變數:對照 env-vars.json 設定(API keys 手動貼)
 
 # 7. 手動安裝部分:照 manual-installs.md 打勾
+
+# 8. NAS 工作資產還原(見下一節「桌面捷徑與 ICO 還原」)
 ```
+
+---
+
+## 桌面捷徑與 ICO 還原(NAS 資產,不入 repo)
+
+某些工作資產**不入 repo**(二進位檔、屬於使用者層的小工具設定),需要從 NAS 拉回後手動套用。
+
+### ComfyUI 啟動捷徑 + 自訂圖示
+
+`D:\Work\system-setup\assets\comfyui.ico` **不入 repo**,備份在 NAS。重灌後復原步驟:
+
+1. **從 NAS 取回 ICO**:複製 `comfyui.ico` 到 `D:\Work\system-setup\assets\comfyui.ico`
+   - 若 `assets\` 目錄不存在,先 `mkdir D:\Work\system-setup\assets`
+2. **確認 BAT 在位**:`D:\Work\system-setup\start_comfyui.bat`(此檔在 repo 內,`git pull` 後就有)
+3. **建桌面捷徑**:桌面右鍵 → 新建 → 捷徑 → 指向 `D:\Work\system-setup\start_comfyui.bat`
+4. **套圖示**:捷徑右鍵 → 內容 → 變更圖示 → 瀏覽 → 選 `D:\Work\system-setup\assets\comfyui.ico` → 確定
+
+**注意**:ICO 路徑寫死進 `.lnk` 檔,搬動 ICO 位置會讓捷徑退回灰色 BAT 圖示。要搬就連同重做捷徑。
 
 ---
 
@@ -181,6 +201,7 @@ Copy-Item D:\Recovery\snapshot-YYYY-MM-DD\PROFILE.ps1 $PROFILE
 - **API keys**:安全考量,只記服務清單,值手動輸入
 - **DaVinci 專案 / 素材**:`D:\Media\` 與 NAS
 - **`.env` 檔**:NAS 整包備份
+- **桌面捷徑 ICO 等個人化資產**:NAS 備份(見上方「桌面捷徑與 ICO 還原」)
 
 ---
 
@@ -246,3 +267,7 @@ Copy-Item D:\Recovery\snapshot-YYYY-MM-DD\PROFILE.ps1 $PROFILE
 - **Armoury Crate**:在 NVIDIA 驅動之後、開發工具之前裝(會搶 OSD / 背景服務註冊順序)
 - **ComfyUI portable**:解壓後保留原本巢狀結構(`ComfyUI_portable\ComfyUI_windows_portable\`),**不要拍平**(裡面路徑是相對寫死的)
 - **Steam 遊戲裝 D 槽**:Steam → 設定 → 儲存空間 → 加入 `D:\Games\Steam` 為預設 Library(先設再裝遊戲,裝完才改要搬資料很慢)
+
+---
+
+**最後更新**:2026-04-27

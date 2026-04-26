@@ -88,6 +88,7 @@ https://raw.githubusercontent.com/Wayne-0820/system-setup/main/START_HERE.md
 | `openwebui-setup.md` | Open WebUI + LiteLLM 多模型介面(含 3 個踩坑) | 裝 Open WebUI 時 |
 | `ldbot-checklist.md` | Ldbot 重灌前後備忘 | 重灌前 + Ldbot 重建時 |
 | `reinstall-manifest.md` | 重灌清單自動產生系統 + 踩坑庫 | **全部裝完後執行一次** |
+| `tools/README.md` | system-setup 周邊腳本工具清單(目前含 png_to_ico.py) | 寫新工具腳本前對照規範 |
 
 ### 💾 備份 / 災難還原
 
@@ -116,9 +117,17 @@ system-setup/
 │   ├── JoyCaption_Beta1_快速反推.json
 │   └── JoyCaption_Beta1_訓練反推.json
 │
+├── tools/                            # 周邊腳本(Python 小工具)
+│   ├── README.md                     # 工具清單 + 用法
+│   └── png_to_ico.py                 # PNG → 多尺寸 ICO(內建亮度閾值去背)
+│
 └── sageattention_build_notes/
     └── BUILD_NOTES.md                # 9 次嘗試的完整失敗 / 解法紀錄
 ```
+
+**不入 repo 的工作資產**(備份在 NAS):
+
+- `assets/comfyui.ico` — ComfyUI 啟動捷徑圖示。重灌恢復步驟見 `reinstall-manifest.md`。
 
 ---
 
@@ -128,7 +137,8 @@ system-setup/
 2. **system-setup repo**:確保所有改動已 commit + push
 3. **SageAttention `.patched` 檔案**:確認都在 system-setup repo 內(救援用)
 4. **D:\tmp\SageAttention\** source 整包 NAS 備份(以後重編需要)
-5. **其他工作資料夾**整包丟 NAS(清掉 `.venv/`、`__pycache__/`、`node_modules/`)
+5. **NAS 上的不入 repo 資產**確認還在(`assets/comfyui.ico` 等)
+6. **其他工作資料夾**整包丟 NAS(清掉 `.venv/`、`__pycache__/`、`node_modules/`)
 
 ---
 
@@ -168,12 +178,13 @@ system-setup/
 14. `D:\Models\` 整個從 NAS 復原(SD / Klein / JoyCaption 模型)
 15. `D:\Cache\Resolve\Database\Local_D\` 從 NAS 復原(DaVinci 專案 Library)
 16. `D:\Media\Assets\` 從 NAS 復原
+17. **NAS 工作資產復原**:`assets/comfyui.ico` 等不入 repo 的檔案,套桌面捷徑(見 `reinstall-manifest.md`)
 
 ### Phase 5:驗證
-17. 跑 `generate-manifest.ps1` 產新快照
-18. 跟舊快照 diff 確認沒漏裝什麼
-19. 各工具煙測(ComfyUI 跑 Klein 4B / DaVinci 開新專案 / Ldbot `uv run python main.py`)
+18. 跑 `generate-manifest.ps1` 產新快照
+19. 跟舊快照 diff 確認沒漏裝什麼
+20. 各工具煙測(ComfyUI 跑 Klein 4B / DaVinci 開新專案 / Ldbot `uv run python main.py`)
 
 ---
 
-**最後更新**:2026-04-26
+**最後更新**:2026-04-27

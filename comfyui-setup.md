@@ -2,7 +2,7 @@
 
 > **這份文件反映實際運行狀態**(不是規劃)。
 >
-> 最後同步:2026-04-26
+> 最後同步:2026-04-27
 >
 > ComfyUI 是這台機器的主要生成工具,配 SageAttention 3 跑 SDXL / FLUX.1 / FLUX.2 Klein 系列。
 
@@ -104,7 +104,7 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 
 **行為**:開新 PowerShell(`-NoExit` 保留 log)→ cd 到 ComfyUI 目錄 → 跑啟動 bat。
 
-未來可建桌面捷徑指向此 BAT,並自訂 .ico 圖示。
+桌面捷徑與自訂 ICO 已完成。ICO 工作路徑 `D:\Work\system-setup\assets\comfyui.ico`,**不入 repo**(備份位於 NAS)。重灌恢復步驟見 `reinstall-manifest.md`。
 
 ---
 
@@ -190,6 +190,17 @@ Manager 會自動處理:
 - 第一次啟動時 pip 安裝依賴
 
 **例外**:某些節點需要修復 opencv 衝突等,看具體節點文件。
+
+### Manager 搜尋踩坑
+
+Manager 搜尋以「**包名 (repo 名)**」為主,**不是節點名**。以節點名搜常會搜到付費替代品而非真正想要的開源版:
+
+| 你想要的節點 | 直接搜「節點名」會發生什麼 | 正確搜法 |
+|---|---|---|
+| Show Text 🐍(pysssss) | 搜「ShowText」→ 跳付費雲端節點,搜不到 | 搜 `Custom-Scripts` 或認作者 ID `pythongosssss` |
+| JoyCaption | 搜「JoyCaption」→ 搜不到正確包 | 搜 `LayerStyle Advance`(節點包在 LayerStyle 裡) |
+
+**規則**:確認正確 repo 名再搜,不要用節點名硬找。
 
 ### AlekPet 自動 pip 安裝(已處理)
 
@@ -298,6 +309,15 @@ Manager 會自動處理:
 - specify_depth_field
 - include_composition_style
 
+### 翻譯節點接法規則
+
+| Workflow | 翻譯節點 | 輸出語言 | 理由 |
+|---|---|---|---|
+| 快速反推 | ✅ 接 GoogleTranslateTextNode(英→繁中) | 中英對照 | 看圖、人類讀取 |
+| 訓練反推 | ❌ **不接** | 純英文 | LoRA 訓練要保英文 caption,中翻會破 SD prompt 結構 |
+
+**Rate limit fallback**:AlekPet `GoogleTranslateTextNode` 走 Google 公開 endpoint,台灣連線偶爾被擋,fallback 切 `DeepTranslatorTextNode` + MyMemory backend。
+
 ---
 
 ## 重要踩坑 SOP
@@ -353,7 +373,7 @@ Manager 會自動處理:
 
 | 優先 | Workflow | 節點數 | 主要技術 |
 |---|---|---|---|
-| 1 | JoyCaption Beta1 反推(進行中)✅ | 6 | 圖像反推 prompt |
+| 1 | JoyCaption Beta1 反推 ✅ | 6 | 圖像反推 prompt |
 | 2 | Flux-fill OneReward 萬物移除 | 18 | FLUX.1 Fill + LoRA |
 | 3 | Kontext + ControlNet 姿態改變 | 24 | FLUX Kontext + ControlNet |
 | 4 | Qwen3 TTS 聲音克隆 | 7 | Qwen3 TTS 1.7B + Whisper Large v3 |
@@ -385,9 +405,7 @@ Manager 會自動處理:
 
 ### 短期(下次回來)
 
-1. 用現有 workflow 生成 ComfyUI 啟動圖示底圖
-2. 轉 `.ico` 多尺寸(16/32/48/256)
-3. 套用到 `start_comfyui.bat` 桌面捷徑
+(目前無短期待辦。下一步從「中國 Workflow 重建」優先 2-7 任選一個,Wayne 拍板。)
 
 ### 中期
 
@@ -407,7 +425,8 @@ Manager 會自動處理:
 - **`local-models.md`**:本地模型分工(ComfyUI / Ollama / 雲端 API)
 - **`davinci-pipeline.md`**:後段 DaVinci 整合規劃
 - **`reinstall-manifest.md`**:重灌時的還原步驟
+- **`tools/README.md`**:system-setup 周邊腳本工具(含 png_to_ico.py)
 
 ---
 
-**最後更新**:2026-04-26
+**最後更新**:2026-04-27
