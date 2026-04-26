@@ -8,24 +8,42 @@ Wayne 的系統建置規劃文件集,給 Claude / Claude Code 當脈絡的單一
 
 ### 開新對話時
 
-**第一步**:把這段話貼給 Claude:
+#### 主窗口(Sysadmin + 決策諮詢)
+
+把 `SYSADMIN_BRIEFING.md` 整份內容貼給新窗口,讓它接管 sysadmin 角色:
+
+```
+我要建立新的主窗口進行系統長期維護。
+以下是接班簡報,請完整讀完內化:
+
+=== SYSADMIN_BRIEFING ===
+[整份貼上 D:\Work\system-setup\SYSADMIN_BRIEFING.md]
+=== END ===
+
+讀完後告訴我:
+1. 你抓到的核心脈絡
+2. 你準備好接手了嗎
+3. 接班測試題你的回答
+```
+
+#### 執行窗口(跑特定任務)
 
 ```
 我的 system-setup repo:https://github.com/Wayne-0820/system-setup
 
-請先讀 START_HERE.md,然後告訴我:
-1. 你抓到的核心脈絡是什麼
-2. 針對我這次的任務,你會額外讀哪份文件
+請用 web_fetch 讀(只這一份,避免 rate limit):
+https://raw.githubusercontent.com/Wayne-0820/system-setup/main/START_HERE.md
+
+你需要其他文件時告訴我檔名,我會直接貼內容給你。
 
 我這次要做的事:[填入]
-
-任務結束時,請用 PROGRESS_TEMPLATE.md 的格式產出進度報告給我。
+任務結束時請用 PROGRESS_TEMPLATE.md 格式產出進度報告。
 ```
 
 ### 任務結束時
 
-執行窗口照 `PROGRESS_TEMPLATE.md` 格式產出進度報告,完整貼給主規劃窗口。
-主規劃窗口會產出更新後的 MD,Wayne 再 commit + push 完成同步循環。
+執行窗口照 `PROGRESS_TEMPLATE.md` 格式產出進度報告,完整貼給主窗口。
+主窗口產出更新後的 MD,Wayne 再 commit + push 完成同步循環。
 
 ---
 
@@ -35,7 +53,8 @@ Wayne 的系統建置規劃文件集,給 Claude / Claude Code 當脈絡的單一
 
 | 檔案 | 用途 | 何時讀 |
 |---|---|---|
-| `START_HERE.md` | 新對話 onboarding,30 秒抓脈絡 | **新窗口第一份讀** |
+| `SYSADMIN_BRIEFING.md` | **主窗口接班簡報**(sysadmin + 決策諮詢) | **新主窗口必讀** |
+| `START_HERE.md` | 執行窗口 onboarding | 新執行窗口讀 |
 | `context.md` | 硬體 / 使用情境 / D 槽完整結構 | 主規劃窗口必讀 |
 | `decisions.md` | 已拍板的決策 + winget 安裝清單 | 重灌時逐項對照 |
 | `PROGRESS_TEMPLATE.md` | 進度報告範本 | 任務結束時用 |
