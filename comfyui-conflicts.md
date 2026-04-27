@@ -1,0 +1,130 @@
+# ComfyUI 節點衝突主索引
+
+> 這份檔案是 **ComfyUI custom_node 衝突的中央索引 + 反向查表 + 決策日誌**。
+> 每個 pack 的明細衝突清單放在 `comfyui-conflicts-{pack}.md`(per-pack 檔案)。
+> 裝新 pack 前**必查這份**,裝完更新這份。
+>
+> 最後更新:2026-04-27
+
+---
+
+## TL;DR
+
+| 項目 | 狀態 |
+|---|---|
+| 已記錄 pack 數 | 1(KJNodes) |
+| 反向索引節點數 | 4(active 衝突)+ 57(同 pack 群衝突,待安裝才升級) |
+| 高風險未解衝突 | 0 |
+| 中風險待留意 | 2(`AudioConcatenate` / `WanVideoNAG`,跟 system-setup 下階段規劃相關) |
+
+---
+
+## 為什麼要做這份
+
+ComfyUI 同名節點機制:兩個 pack 註冊同名節點時,**字母序後載入的 pack 覆蓋先載入的**(以 `NODE_CLASS_MAPPINGS` 為準)。
+結果:你以為在用 pack A 的節點,實際跑的是 pack B 的同名節點 → 行為不一致 → 除錯地獄。
+
+這份檔案解決三種查詢:
+
+1. **正向**:裝 pack X,跟現有環境衝突什麼?(看 per-pack 檔案)
+2. **反向**:節點 N 是哪些 pack 提供的?目前用哪個版本?(看本檔「反向節點索引」)
+3. **決策追溯**:為什麼選 A 不選 B?(看本檔「解決決策表」)
+
+---
+
+## 已安裝 pack 總表
+
+| Pack 名稱 | 版本 | 安裝日 | 衝突數 | 明細檔案 | 狀態 |
+|---|---|---|---|---|---|
+| ComfyUI-KJNodes | v1.3.9 | 2026-04-27 | 61 | [`comfyui-conflicts-kjnodes.md`](./comfyui-conflicts-kjnodes.md) | ✅ active |
+
+**狀態定義**:
+- ✅ active:目前在用,衝突已解決
+- ⚠️ watch:有未爆發衝突,下階段規劃會碰到
+- 🚫 skipped:評估後不裝
+- 🗑️ removed:曾裝過,已移除
+
+---
+
+## 🔑 反向節點索引(active 衝突)
+
+> 規則:**只列當前 active pack 與其他 pack 同名的節點**(同 pack 群衝突另列)。
+> 未來裝新 pack 時,新增同名節點直接 append 到這張表。
+> 查「節點 X 會撞嗎」grep 這張就好。
+
+| 節點名稱 | 提供 pack | 當前勝出 | 風險 | 備註 |
+|---|---|---|---|---|
+| `AudioConcatenate` | KJNodes, MW-ComfyUI_AudioTools, Image Processing Suite | KJNodes | 🟡 中 | ⚠️ Qwen3 TTS 階段裝 audio pack 前回查 |
+| `Sleep` | KJNodes, ComfyUI Functional | KJNodes | 🟢 低 | Functional 是 utility pack,撞到再看 |
+| `SplitImageChannels` | KJNodes, ComfyUI_Swwan, cspnodes | KJNodes | 🟢 低 | cspnodes 冷門,Swwan 已決定不裝 |
+| `WanVideoNAG` | KJNodes, Yaser-nodes for ComfyUI | KJNodes | 🟡 中 | ⚠️ Wan 2.2 階段裝 Wan 相關 pack 前回查 |
+
+### 同 pack 群衝突(待新 pack 安裝才升級)
+
+部分節點目前只跟「不打算安裝」的 pack 衝突,沒有 active 對手,先收在 per-pack 檔案,不污染本表。
+範例:KJNodes 的 57 個跟 `ComfyUI_Swwan` 的衝突 → 因為 Swwan 不裝,這些節點在本反向表中不出現。
+若未來真的裝了 Swwan(或類似 fork pack),把對應節點從 per-pack 檔案升級到本表。
+
+---
+
+## 解決決策表
+
+> 同名節點誰勝出 + 為什麼。每筆決策一行,有理由有日期,以後反悔也能追溯。
+
+| 日期 | 衝突 | 決策 | 理由 |
+|---|---|---|---|
+| 2026-04-27 | KJNodes vs ComfyUI_Swwan(57 個節點) | KJNodes 勝出,Swwan 永不安裝 | Swwan 是疑似 fork / 抄襲的冷門 pack,KJNodes 是上游正主,星數活躍度差距巨大 |
+| 2026-04-27 | KJNodes vs Image Processing Suite(`AudioConcatenate`) | KJNodes 暫勝,但 Qwen3 TTS 階段重新評估 | 目前未做 audio workflow,沒有實際衝突;TTS 階段若需要 Image Processing Suite 的功能再決定 |
+
+---
+
+## 裝新 pack 前 SOP
+
+每次要裝新 custom_node 之前,**按順序跑這四步**:
+
+### 1. 看 ComfyUI Manager 的 conflicts 數字
+- 0 → 直接裝
+- 1-10 → 看一下衝突列表,通常無害
+- >10 → **打開列表逐項比對**
+
+### 2. 比對本檔的「反向節點索引」
+- 衝突節點裡有沒有你**正在用**的?(active 表裡)
+- 衝突節點裡有沒有你**規劃會用**的?(per-pack 檔案的「下一階段影響」段)
+- 都沒中:風險低,可以裝
+- 有中:評估後決定(換 pack / 接受替代 / 不裝)
+
+### 3. 安裝後產生 per-pack 衝突明細
+- 檔名:`comfyui-conflicts-{pack}.md`(pack 名小寫去 `ComfyUI-` 前綴,例如 `ComfyUI-KJNodes` → `kjnodes`)
+- 用 [`comfyui-conflicts-kjnodes.md`](./comfyui-conflicts-kjnodes.md) 當 template
+- 段落:Header / TL;DR / 衝突分組(按風險)/ 對規劃 workflow 的影響 / 做的決策 / 最後更新
+
+### 4. 更新本主索引
+- **「已安裝 pack 總表」**:加一列
+- **「反向節點索引」**:有新 active 衝突的節點 append
+- **「解決決策表」**:重大決策一行
+- 更新「最後更新」日期
+
+---
+
+## 風險分級標準
+
+| 等級 | 定義 | 處理 |
+|---|---|---|
+| 🟢 **低** | 衝突 pack 是冷門 / 不會裝 / utility pack 偶發碰撞 | 記錄即可,不影響當前 |
+| 🟡 **中** | 衝突 pack 跟 system-setup 下階段規劃 workflow 相關 | 反向索引標 ⚠️,規劃文件相互引用 |
+| 🟠 **高** | 衝突節點目前正在用、行為不一致會直接壞 workflow | 立刻決策(留誰移誰),記錄到決策表 |
+| 🔴 **致命** | 衝突會讓 ComfyUI 啟動失敗 / 模型載入失敗 / VRAM 異常 | 立刻移除新 pack,寫入 anti-pattern |
+
+---
+
+## 跟其他文件的關係
+
+- [`comfyui-setup.md`](./comfyui-setup.md) — ComfyUI 配置全貌(含「裝新 custom node 流程」會引用本檔)
+- [`comfyui-workflows.md`](./comfyui-workflows.md) — Workflow 清單(每個 workflow 用到的節點 → 出問題時回查衝突)
+- [`comfyui-conflicts-kjnodes.md`](./comfyui-conflicts-kjnodes.md) — KJNodes 衝突明細(第一份 per-pack 檔案)
+
+---
+
+**最後更新**:2026-04-27
+
+**維護規則**:每次新增 / 移除 / 升級 pack 後,**主索引 + per-pack 檔案**兩處都要更新。執行窗口產 per-pack 檔案 → 主窗口整合進主索引。
