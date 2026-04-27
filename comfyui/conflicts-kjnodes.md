@@ -5,7 +5,7 @@
 > 安裝日:2026-04-28
 > 狀態:✅ active
 >
-> 主索引:[`comfyui-conflicts.md`](./comfyui-conflicts.md)
+> 主索引:[`conflicts.md`](./conflicts.md)
 > 風險分級標準見主索引。
 >
 > 最後更新:2026-04-28
@@ -72,7 +72,7 @@
 
 ## 對 system-setup 下一階段規劃的影響
 
-對照 `comfyui-setup.md` 的「下一階段規劃」:
+對照 `setup.md` 的「下一階段規劃」:
 
 | 規劃 workflow | 可能影響的衝突 | 處理 |
 |---|---|---|
@@ -96,9 +96,9 @@
 
 ## 相關文件
 
-- [`comfyui-conflicts.md`](./comfyui-conflicts.md) — 主索引(反向節點查表 + 決策日誌 + SOP)
-- [`comfyui-setup.md`](./comfyui-setup.md) — ComfyUI 配置全貌(含 Custom Nodes 安裝規則)
-- [`comfyui-workflows.md`](./comfyui-workflows.md) — Workflow 清單(Flux-fill 萬物移除是 ImageAndMaskPreview 唯一使用者)
+- [`conflicts.md`](./conflicts.md) — 主索引(反向節點查表 + 決策日誌 + SOP)
+- [`setup.md`](./setup.md) — ComfyUI 配置全貌(含 Custom Nodes 安裝規則)
+- [`workflows.md`](./workflows.md) — Workflow 清單(Flux-fill 萬物移除是 ImageAndMaskPreview 唯一使用者)
 
 ---
 

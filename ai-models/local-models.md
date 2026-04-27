@@ -72,7 +72,7 @@ http://localhost:11434
 
 ## ComfyUI Diffusion 模型
 
-詳見 `comfyui-setup.md` 完整模型清單。簡述:
+詳見 `../comfyui/setup.md` 完整模型清單。簡述:
 
 ### 主力模型分工
 
@@ -202,7 +202,7 @@ ollama pull qwen3:14b
 
 **繞過解法**:用 `curl.exe` 4 路並行下載(實測穩定 11 MB/s)。
 
-詳見 `comfyui-setup.md` 的踩坑 SOP 章節。
+詳見 `../comfyui/setup.md` 的踩坑 SOP 章節。
 
 ### Ollama 下載
 
@@ -220,10 +220,10 @@ ollama pull qwen3:14b
 
 ## 相關文件
 
-- **`comfyui-setup.md`**:ComfyUI 完整配置,所有 SD / FLUX 模型詳情
-- **`sageattention-patches.md`**:讓 ComfyUI 加速 17% 的關鍵 patches
-- **`openwebui-setup.md`**:Open WebUI + LiteLLM 多模型介面(接 Ollama + Claude API)
-- **`davinci-pipeline.md`**:AI 影像 pipeline 整體規劃
+- **`../comfyui/setup.md`**:ComfyUI 完整配置,所有 SD / FLUX 模型詳情
+- **`../comfyui/sageattention-patches.md`**:讓 ComfyUI 加速 17% 的關鍵 patches
+- **`../openwebui/setup.md`**:Open WebUI + LiteLLM 多模型介面(接 Ollama + Claude API)
+- **`../davinci/pipeline.md`**:AI 影像 pipeline 整體規劃
 
 ---
 

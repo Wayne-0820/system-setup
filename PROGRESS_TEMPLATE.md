@@ -29,7 +29,7 @@
 
 ## 2. 環境變更
 
-> ⚠️ **列「新增」前先對照** system-setup 既有 MD(尤其 `comfyui-setup.md` / `decisions.md` / `reinstall-manifest.md` / `tools/README.md`),**釐清「前次對話已建立」 vs 「本次新增」**。不能只憑這次對話脈絡推斷,否則會誤把既有檔案標成新增,主窗口整合時會出錯。
+> ⚠️ **列「新增」前先對照** system-setup 既有 MD(尤其 `comfyui/setup.md` / `decisions.md` / `reinstall-manifest.md` / `tools/README.md`),**釐清「前次對話已建立」 vs 「本次新增」**。不能只憑這次對話脈絡推斷,否則會誤把既有檔案標成新增,主窗口整合時會出錯。
 
 ### 新增 / 修改的檔案
 
@@ -94,8 +94,8 @@ D:\Work\system-setup\start_comfyui.bat
 
 ### 必須更新(資訊不對,影響重灌恢復)
 
-- `comfyui-setup.md` — 補上 SageAttention shim 段落
-- `local-models.md` — 補 Klein 系列、Qwen3 配對表
+- `comfyui/setup.md` — 補上 SageAttention shim 段落
+- `ai-models/local-models.md` — 補 Klein 系列、Qwen3 配對表
 
 ### 建議更新(增加完整度)
 
@@ -104,7 +104,7 @@ D:\Work\system-setup\start_comfyui.bat
 
 ### 建議新增
 
-- `sageattention-patches.md`(獨立文件,內容包含 6 個 patches)
+- `comfyui/sageattention-patches.md`(獨立文件,內容包含 6 個 patches)
 
 ---
 
@@ -123,7 +123,7 @@ D:\Work\system-setup\start_comfyui.bat
 [如果有發現可能在重灌時造成問題的地方,記在這]
 
 例:
-- PyTorch 升級會覆蓋 6 個 SageAttention patches,升級前必須先讀 sageattention-patches.md
+- PyTorch 升級會覆蓋 6 個 SageAttention patches,升級前必須先讀 comfyui/sageattention-patches.md
 - xet bridge 繞過用的 curl 並行下載沒有自動化腳本,重灌後要手動跑
 
 ---

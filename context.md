@@ -56,7 +56,7 @@ D:\
 │
 ├── Emulator\       # LDPlayer
 │
-├── Media\          # 影片素材、AI 生成、DaVinci 輸出(詳見 `media-structure.md`)
+├── Media\          # 影片素材、AI 生成、DaVinci 輸出(詳見 `davinci/media-structure.md`)
 │   ├── Projects\             # 當前進行中的剪輯專案
 │   ├── Archive\              # 已結案封存
 │   ├── Assets\               # 跨專案共用資源(Music / SFX / Fonts / LUTs / Logos)
@@ -87,8 +87,8 @@ LLM 節點(如 JoyCaption)在程式碼裡寫死路徑,**不吃 `extra_model_path
 
 ## 使用情境優先序(高到低)
 
-1. **AI 影像生產 pipeline**(主軸):Claude Code + CrewAI 編排,DaVinci Studio 組裝,ComfyUI(Klein / FLUX) + FramePack 生成影片。詳見 `davinci-pipeline.md`、`comfyui-setup.md`
-2. **Ldbot 收尾維護**:核心已完成,偶爾修 bug。詳見 `ldbot-checklist.md`
+1. **AI 影像生產 pipeline**(主軸):Claude Code + CrewAI 編排,DaVinci Studio 組裝,ComfyUI(Klein / FLUX) + FramePack 生成影片。詳見 `davinci/pipeline.md`、`comfyui/setup.md`
+2. **Ldbot 收尾維護**:核心已完成,偶爾修 bug。詳見 `ldbot/checklist.md`
 3. **DaVinci 一般剪輯**(非 AI 流程)
 4. 一般生產力:Office、瀏覽器、通訊
 5. 休閒娛樂:Steam 遊戲 / 獨立遊戲(裝 D 槽)
