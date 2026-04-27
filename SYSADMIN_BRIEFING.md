@@ -2,7 +2,7 @@
 
 > 這份文件給「Wayne 系統的主窗口 Claude」讀。讀完你就是 Wayne 的 **sysadmin 兼決策諮詢**,不是聊天伙伴,不是執行者。
 >
-> 最後更新:2026-04-26
+> 最後更新:2026-04-28
 > 適用對話模型:Opus 4.7 / Sonnet 4.7+(主規劃用 Opus,執行任務用 Sonnet)
 
 ---
@@ -184,8 +184,8 @@ ComfyUI 工作流在另一個 Claude 窗口處理中,CrewAI 還沒建。**現在
 ### system-setup repo 狀態
 
 - **GitHub Public**(2026-04-26 改 Public,grep 確認沒真實 secret)
-- 16 份 MD 文件齊全
-- `.gitignore` 已建(secrets / venv / cache 完整覆蓋)
+- 文件按主題分子目錄(2026-04-28 重構):`comfyui/` / `ai-models/` / `davinci/` / `ldbot/` / `openwebui/` + root 跨主題檔(README、START_HERE、SYSADMIN_BRIEFING、PROGRESS_TEMPLATE、context、decisions、reinstall-manifest、baseline-trigger)
+- `.gitignore` 已建(secrets / venv / cache / `.claude/` 完整覆蓋)
 - 已啟用 Secret scanning(GitHub 防護)
 
 ---
@@ -202,7 +202,6 @@ ComfyUI 工作流在另一個 Claude 窗口處理中,CrewAI 還沒建。**現在
 
 ### 待辦(短期)
 
-- [ ] ComfyUI 啟動圖示底圖生成 + .ico 多尺寸 + 桌面捷徑
 - [ ] 是否補下 qwen3:14b(視 agent 需求決定)
 - [ ] SageAttention issue #357 修復後重編(享受完整 FP4 加速)
 
@@ -210,6 +209,7 @@ ComfyUI 工作流在另一個 Claude 窗口處理中,CrewAI 還沒建。**現在
 
 - [ ] 中國 workflow 模型下載(FLUX.1 Fill / Kontext / Qwen-Image-Edit / Qwen3 TTS / Whisper / Wan 2.2,~100-150 GB)
 - [ ] CrewAI 第一條 agent pipeline(Writer + Art Director 串接)
+- [ ] LiteLLM 接入 NVIDIA NIM API(deepseek-v4-pro / deepseek-v4-flash,nvapi- key 已有未接入)
 - [ ] **第一次 C 槽 baseline 映像**(觸發條件詳見上面)
 
 ### 待辦(長期)
@@ -256,7 +256,7 @@ Wayne 下載放回 repo,commit + push
 ### 文件同步流程(要 Wayne 動手的)
 
 ```
-你產出 MD → Wayne 下載 → 放 D:\Work\system-setup\ → 
+你產出 MD → Wayne 下載 → 放 D:\Work\system-setup\<子目錄>\ → 
 git add . → git commit -m "..." → git push
 ```
 
@@ -322,6 +322,53 @@ Wayne 一開始想 Private,但討論後發現:
 
 ---
 
+## Sysadmin 慣例 / 教訓
+
+跨多次接班累積的 sysadmin 操作教訓,寫在這避免重蹈。
+
+### 1. 接班時主動 audit repo 結構合理性
+
+**不要只接受現狀**。新主窗口接班時,Wayne 的 briefing 會說「整套架構都規劃好了」,但這不代表 repo 結構真的反映規劃精神。
+
+實例:**2026-04-28 子目錄重構之前**,`system-setup\` 平鋪 18 份 MD,跟 D 槽精細分區的 briefing 風格明顯不一致。但連續幾個主窗口都接受現狀繼續往 root 堆檔(包括衝突管理那輪新增 3 份 conflicts md),直到 Wayne 指出才重構。
+
+接班時用這幾個問題自我審視:
+- repo 結構跟 briefing 的整體規劃哲學一致嗎?
+- 有沒有「遲早要分」但目前還在堆積的目錄?
+- 既有檔案命名慣例有沒有破例(大小寫 / 連字號 / 底線)?
+
+抓到不一致就 raise 出來,讓 Wayne 拍板要不要動,**而不是繼續往不一致的方向加東西**。
+
+### 2. PowerShell 5.1 BOM 災難 — bulk script 必須用 .NET API 寫檔
+
+**症狀**:PowerShell 5.1 的 `Set-Content -Encoding UTF8` / `Out-File -Encoding utf8` **強制加 UTF-8 BOM**(`EF BB BF`),即使原檔無 BOM。PowerShell 7+ 才修掉這個行為。
+
+**踩過兩次**:
+- LiteLLM 啟動 log 顯示 `\u569c\u79a6odel_list`(model_list 被污染)— 真兇是 BOM
+- 2026-04-28 子目錄重構 bulk replace 給 14 個檔加 BOM,污染 commit diff
+
+**解法**:bulk script 一律用 .NET API:
+
+```powershell
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
+```
+
+**驗證**:寫完用 `[System.IO.File]::ReadAllBytes` 讀前 3 bytes,確認不是 `EF BB BF`。
+
+repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,5.1 一律改用 .NET API。
+
+### 3. 派工給執行窗口時,主索引最新版要用 raw URL 而不是貼內容
+
+子目錄重構後 GitHub raw URL 變成 `https://raw.githubusercontent.com/Wayne-0820/system-setup/main/<子目錄>/<檔名>.md`,例如:
+
+- `https://raw.githubusercontent.com/Wayne-0820/system-setup/main/comfyui/conflicts.md`
+- `https://raw.githubusercontent.com/Wayne-0820/system-setup/main/comfyui/setup.md`
+
+派工時貼 URL 而不是內容,執行窗口能驗證它讀到的是最新版,主窗口也省 token。但要注意 GitHub raw URL 有 60/hour rate limit,只貼必要的幾條。
+
+---
+
 ## 文件導航
 
 system-setup repo 各 MD 的角色:
@@ -333,8 +380,11 @@ system-setup repo 各 MD 的角色:
 | `PROGRESS_TEMPLATE.md` | 派工給執行窗口時提醒它用這個格式 |
 | `context.md` | 跟本 brief 有重複,但 context 更廣 |
 | `decisions.md` | winget 安裝清單、手動安裝決策 |
-| `comfyui/setup.md` | ComfyUI 完整現況,模型清單 |
+| `comfyui/setup.md` | ComfyUI 完整現況,模型清單,「裝新 custom node 流程」SOP |
 | `comfyui/workflows.md` | 7 個 workflow 詳述 |
+| `comfyui/conflicts.md` | Custom node 衝突主索引(反向節點查表 + 決策日誌) |
+| `comfyui/conflicts-kjnodes.md` | KJNodes per-pack 衝突明細(per-pack template 範本) |
+| `comfyui/conflicts-rgthree.md` | rgthree-comfy per-pack 衝突明細(catch-up 範例) |
 | `comfyui/sageattention-patches.md` | 🚨 6 個 patches,升級前必讀 |
 | `comfyui/huggingface-download-tricks.md` | 下 HF 模型遇到問題時 |
 | `ai-models/local-models.md` | 模型分工(Ollama / ComfyUI / 雲端) |
@@ -364,7 +414,7 @@ system-setup repo 各 MD 的角色:
 主動提一下這幾條(讓 Wayne 知道你抓到重點):
 - 24GB VRAM 是天花板
 - C 槽 baseline 還沒做(等核心工作流跑通)
-- system-setup repo 是真相來源,Public
+- system-setup repo 是真相來源,Public,**已按主題分子目錄**(2026-04-28 重構)
 
 ### 3. 等 Wayne 給任務
 
@@ -390,9 +440,10 @@ system-setup repo 各 MD 的角色:
 5. 進度報告流程是怎麼跑的?
 6. 為什麼 LLavacheckpoints 不能搬到 D:\Models\?
 7. SageAttention 6 個 patches 為什麼是救命文件?
+8. PowerShell 5.1 寫 markdown 為什麼不能用 `Set-Content -Encoding UTF8`?
 
-如果這 7 題你都答得出來 = 接班成功。
+如果這 8 題你都答得出來 = 接班成功。
 
 ---
 
-**最後更新**:2026-04-26
+**最後更新**:2026-04-28
