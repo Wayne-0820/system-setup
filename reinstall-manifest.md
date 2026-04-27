@@ -219,6 +219,22 @@ Copy-Item D:\Recovery\snapshot-YYYY-MM-DD\PROFILE.ps1 $PROFILE
   ```powershell
   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
   ```
+- **MS Store `python.exe` stub 攔截**(Windows 11 預設坑,2026-04-27 實戰驗證)
+  - 症狀:`C:\Users\<user>\AppData\Local\Microsoft\WindowsApps\` 下有兩個 0-byte 假 `python.exe` / `python3.exe`,直接打 `python` 會跳 Microsoft Store 訊息而不是執行真 Python
+  - 觸發場景:`python tools\xxx.py` 跑 Ldbot 維運腳本時被攔(系統沒裝 Python 但 PATH 上有 stub)
+  - **解法順序不能反**:
+    1. **先關別名**:Win+I → 應用程式 → 進階應用程式設定 → 應用程式執行別名 → 「應用程式安裝程式 python.exe」「應用程式安裝程式 python3.exe」兩個 toggle 都關
+    2. **再裝真 Python**:python.org 下 **3.14 系列最新穩定版**,**勾「Add python.exe to PATH」**(底部那個)
+  - 為何順序不能反:WindowsApps 在 PATH 順序通常很前面,沒先關別名直接裝 Python,新 PowerShell 還是會撞到 stub
+  - **驗證**:**新開** PowerShell(舊視窗 PATH 不會更新),跑:
+    ```powershell
+    python --version
+    where.exe python
+    ```
+    預期 `Python 3.14.x` + `where.exe python` **第一行**是 `C:\Users\<user>\AppData\Local\Programs\Python\Python314\python.exe`(per-user 預設裝法),**不是** WindowsApps。第一行還是 WindowsApps → 別名沒關乾淨,回去重關。
+  - **為何要裝系統級 Python**(而非只靠 uv 或 ComfyUI portable 的 python_embeded):uv 管的 Python 在 `~/.local/share/uv/python/` 不會出現在 PATH;ComfyUI 的 `python_embeded` 是內部用、不該污染。日常 `python -m http.server`、IDE 預設 interpreter 偵測、跑 Ldbot tools/ 維運腳本都需要系統級 Python 撐著。決策見 `decisions.md` → Python 管理段
+  - **為何選 3.14 不選 3.12 / 3.13 / 3.15**:3.12 已 security-fixes-only;3.13 還在維護但既然要升一次到位;3.15 還在 alpha(2026-04 為 3.15.0a8),生態相容性差、PyInstaller 等工具未支援
+  - **跟既有 uv 環境的並存**:Ldbot 由 uv 鎖在 3.12.13(`pyproject.toml` 的 `requires-python`),走 `uv run python ...` 跑;系統 3.14 跟 uv 3.12 完全並存,互不干涉。**紀律**:Ldbot 永遠走 `uv run`,不打系統 `python`
 
 ### 環境變數
 
