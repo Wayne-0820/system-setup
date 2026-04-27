@@ -74,14 +74,14 @@
 - `winget install Ollama.Ollama`
 - 設環境變數 `OLLAMA_MODELS` = `D:\Models\ollama`
 - LM Studio 作為選用,要認真挑模型時再裝
-- 詳見 `local-models.md`
+- 詳見 `ai-models/local-models.md`
 
 ## ComfyUI:Portable 版
 
 - 下 `ComfyUI_windows_portable_nvidia.7z` 解壓到 `D:\Work\ComfyUI_portable`
 - **不裝系統版**,隨時可砍可重建
 - 第一個也是唯一手動裝的 custom node:**ComfyUI Manager**
-- 詳見 `comfyui-setup.md`
+- 詳見 `comfyui/setup.md`
 
 ## Shell
 

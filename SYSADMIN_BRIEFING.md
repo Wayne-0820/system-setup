@@ -114,7 +114,7 @@ D:\
 │       └── clip_vision\
 │
 ├── Cache\Resolve\                    # DaVinci 專用
-├── Media\                            # 詳見 media-structure.md
+├── Media\                            # 詳見 davinci/media-structure.md
 │   ├── Projects\
 │   ├── Archive\
 │   ├── Assets\
@@ -305,7 +305,7 @@ Wayne 一開始想 Private,但討論後發現:
 
 5090 Blackwell 是新架構(sm_120),PyTorch + CUDA 編譯生態還沒完全跟上。
 編譯 SageAttention 3 必須改 6 個地方(2 個 PyTorch site-packages + 1 個 Python 標頭 + 1 個 lib + 2 個 source code 修改)。
-這些修改**會被 PyTorch 升級覆蓋**,所以 `sageattention-patches.md` 是救命文件。
+這些修改**會被 PyTorch 升級覆蓋**,所以 `comfyui/sageattention-patches.md` 是救命文件。
 
 ---
 
@@ -333,15 +333,15 @@ system-setup repo 各 MD 的角色:
 | `PROGRESS_TEMPLATE.md` | 派工給執行窗口時提醒它用這個格式 |
 | `context.md` | 跟本 brief 有重複,但 context 更廣 |
 | `decisions.md` | winget 安裝清單、手動安裝決策 |
-| `comfyui-setup.md` | ComfyUI 完整現況,模型清單 |
-| `comfyui-workflows.md` | 7 個 workflow 詳述 |
-| `sageattention-patches.md` | 🚨 6 個 patches,升級前必讀 |
-| `huggingface-download-tricks.md` | 下 HF 模型遇到問題時 |
-| `local-models.md` | 模型分工(Ollama / ComfyUI / 雲端) |
-| `davinci-pipeline.md` | DaVinci + AI 整合(後段) |
-| `media-structure.md` | D:\Media\ 結構 |
-| `openwebui-setup.md` | Open WebUI + LiteLLM 三個踩坑 |
-| `ldbot-checklist.md` | Ldbot 重灌前後備忘 |
+| `comfyui/setup.md` | ComfyUI 完整現況,模型清單 |
+| `comfyui/workflows.md` | 7 個 workflow 詳述 |
+| `comfyui/sageattention-patches.md` | 🚨 6 個 patches,升級前必讀 |
+| `comfyui/huggingface-download-tricks.md` | 下 HF 模型遇到問題時 |
+| `ai-models/local-models.md` | 模型分工(Ollama / ComfyUI / 雲端) |
+| `davinci/pipeline.md` | DaVinci + AI 整合(後段) |
+| `davinci/media-structure.md` | D:\Media\ 結構 |
+| `openwebui/setup.md` | Open WebUI + LiteLLM 三個踩坑 |
+| `ldbot/checklist.md` | Ldbot 重灌前後備忘 |
 | `reinstall-manifest.md` | 重灌完整清單 |
 | `baseline-trigger.md` | baseline 觸發條件 + 完整 SOP + 還原流程 |
 

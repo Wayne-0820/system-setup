@@ -402,8 +402,8 @@ HF 對未認證使用者有下載 quota 限制(每月 GB 數)。
 
 ## 相關文件
 
-- `comfyui-setup.md` — ComfyUI 模型清單(裡面提到的模型大多用本文技巧下載)
-- `local-models.md` — 整體模型分工、HF Token 安全規則
+- `setup.md` — ComfyUI 模型清單(裡面提到的模型大多用本文技巧下載)
+- `../ai-models/local-models.md` — 整體模型分工、HF Token 安全規則
 - `decisions.md` — winget 套件清單(curl / wget / aria2)
 
 ---

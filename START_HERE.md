@@ -66,7 +66,7 @@ D:\
 │       └── ...
 │
 ├── Cache\Resolve\       # DaVinci 專用
-├── Media\               # 詳見 media-structure.md
+├── Media\               # 詳見 davinci/media-structure.md
 ├── tmp\                 # 編譯暫存(SageAttention source 等)
 ├── Sync-Wayne\, Sync-Wife\  # Synology Drive
 ├── Games\, Licenses\, Recovery\
@@ -91,12 +91,12 @@ D:\
 | 你的任務 | 必讀 | 進階 |
 |---|---|---|
 | 通用 | `context.md`、`decisions.md` | - |
-| ComfyUI / SD | `comfyui-setup.md` | `sageattention-patches.md`(6 個 PyTorch patches!) |
-| 本地模型 / Ollama | `local-models.md` | - |
-| DaVinci Resolve | `davinci-pipeline.md` | - |
-| Ldbot 維護 | `ldbot-checklist.md` | - |
-| Open WebUI | `openwebui-setup.md`(含 LiteLLM 3 個踩坑) | - |
-| 剪輯素材管理 | `media-structure.md` | - |
+| ComfyUI / SD | `comfyui/setup.md` | `comfyui/sageattention-patches.md`(6 個 PyTorch patches!) |
+| 本地模型 / Ollama | `ai-models/local-models.md` | - |
+| DaVinci Resolve | `davinci/pipeline.md` | - |
+| Ldbot 維護 | `ldbot/checklist.md` | - |
+| Open WebUI | `openwebui/setup.md`(含 LiteLLM 3 個踩坑) | - |
+| 剪輯素材管理 | `davinci/media-structure.md` | - |
 | 重灌 / 系統重建 | `reinstall-manifest.md` | - |
 
 ---

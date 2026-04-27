@@ -72,7 +72,7 @@ Hasleo 用 LZ4 / Zstd 壓縮,**映像檔約已用空間的 50-70%**。
 
 D 槽有別的保護機制:
 - `D:\Sync-Wayne\` / `D:\Sync-Wife\` → Synology Drive 同步 NAS
-- `D:\Models\` → 重新下載指南在 `huggingface-download-tricks.md`
+- `D:\Models\` → 重新下載指南在 `comfyui/huggingface-download-tricks.md`
 - `D:\Work\` 各 repo → GitHub 雙保險
 - `D:\Media\` → 重要素材**手動定期同步 NAS**
 
@@ -190,9 +190,9 @@ git push
 ## 相關文件
 
 - `reinstall-manifest.md` — 完整重灌清單,baseline 紀錄寫這裡
-- `comfyui-setup.md` — ComfyUI 配置(baseline 觸發條件之一)
-- `huggingface-download-tricks.md` — D 槽模型不備份的依據(可重下載)
-- `media-structure.md` — D:\Media\ 結構,部分資料要手動同步 NAS
+- `comfyui/setup.md` — ComfyUI 配置(baseline 觸發條件之一)
+- `comfyui/huggingface-download-tricks.md` — D 槽模型不備份的依據(可重下載)
+- `davinci/media-structure.md` — D:\Media\ 結構,部分資料要手動同步 NAS
 
 ---
 
