@@ -122,9 +122,12 @@ http://localhost:11434
 | **Claude Sonnet 4.5/4.6/4.7** | 創造性 / 結構化輸出 / 長 context | 品質碾壓本地,token 不貴 |
 | Claude Opus 4.7 | 最高品質決策、長文寫作 | 真的需要時才用 |
 | Claude Haiku 4.5 | 高頻簡單任務 | 便宜快速 |
+| **DeepSeek V4-Pro**(透過 NVIDIA NIM) | 高階推理、長 context、coding | 1.6T 參數、本地跑不了(見「已駁回」段) |
+| DeepSeek V4-Flash(透過 NVIDIA NIM) | 快速推理(預設 reasoning_effort=high) | v4-pro 的輕量版,延遲較低 |
 
 接入方式:
 - 透過 LiteLLM(`D:\Work\LiteLLM\`)轉成 OpenAI 兼容 API
+- Anthropic 走 `anthropic/...` provider;NVIDIA NIM 走 `nvidia_nim/...` provider(設定見 `../openwebui/setup.md` 「擴充:接入 NVIDIA NIM」段)
 - Open WebUI 並排對話用
 - CrewAI Agent backbone 用(Writer / Art Director 等需要創造性的角色)
 
@@ -211,12 +214,16 @@ ollama pull qwen3:14b
 - Q4 量化後仍需 ~400 GB VRAM
 - 24GB VRAM(5090 Laptop)差兩個數量級,連 offload 都救不回來
 
-**替代方案**:**透過 NVIDIA NIM API 雲端呼叫**。
-- nvapi- key 已申請完成
-- 接入 LiteLLM 列在 SYSADMIN_BRIEFING.md 中期待辦
-- 接入後可在 Open WebUI / CrewAI 走 LiteLLM endpoint 呼叫 deepseek-v4-pro / deepseek-v4-flash
+**替代方案(已接入)**:**透過 NVIDIA NIM API 雲端呼叫**(2026-04-28 完成,設定見 `../openwebui/setup.md` 「擴充:接入 NVIDIA NIM」段):
 
-**重新評估觸發**:
+| 模型 | proxy 對外 model_name | 狀態 |
+|---|---|---|
+| DeepSeek V4-Pro | `deepseek-v4-pro` | ✓ 已通(三層驗證過) |
+| DeepSeek V4-Flash | `deepseek-v4-flash` | ⏸ NIM upstream 高流量服務性下線,config 已就位待復服 |
+
+v4-flash 復服後直接重打 `/v1/chat/completions` 即可,無需改 config。NIM 端服務狀態看 https://build.nvidia.com/deepseek-ai/deepseek-v4-flash 。
+
+**重新評估觸發**(本地化方向):
 - 個人硬體升級到 200 GB+ VRAM(短期不會)
 - DeepSeek 釋出更激進的量化版本(< 24 GB)讓 5090 能塞
 

@@ -402,6 +402,29 @@ repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,
 
 **遠端執行端(web Claude)不適用**:web Claude 沒檔案落地,progress report 直接貼對話框。本條規則只給本地執行端。
 
+### 5. Windows + 繁中系統:第三方工具讀 config 檔的 ASCII 紀律
+
+教訓 2 是**寫檔**端的 BOM 問題(自家 PowerShell 行為),這條是**讀檔**端的編碼問題(第三方工具行為)。
+
+**現象**:Wayne 機器是 Windows 11 + 繁中系統,Python `locale.getpreferredencoding()` 回 `cp950`。任何第三方 Python 工具用 `open(file)` / `yaml.safe_load(file)` 而**不顯式帶 `encoding='utf-8'`**,讀到的 byte 就會走 cp950 解碼。**寫檔是無 BOM UTF-8 也救不了**,因為問題在讀檔端。
+
+**踩過**:LiteLLM 1.55.10 `proxy_server.py` 用 `yaml.safe_load(open(config))` 沒帶 encoding,config 加中文註解 → 啟動 `UnicodeDecodeError: 'cp950' codec can't decode byte 0x9a in position 513`。
+
+**紀律**:Windows 繁中系統下,**第三方工具讀的 config 類檔(yaml / json / toml / ini / .env)一律 ASCII only**,不放中文註解、不放中文字串值。我們自家 PowerShell 寫 / 讀沒問題(走 .NET API + 顯式 UTF8Encoding),但工具上游不可控。
+
+**驗證 SOP**(寫完 config 跑一次):
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
+($bytes | Where-Object { $_ -gt 127 }).Count    # 期望 0
+```
+
+非 0 → 有非 ASCII byte,啟動可能炸,先抓出來看。
+
+**適用範圍**:不只 LiteLLM。Open WebUI、LiteLLM、CrewAI、未來任何 Windows 上跑的 Python 1.x 工具都可能踩。**config 類檔的中文註解該寫進對應 MD 文件,不寫進 config 本體**。
+
+升 Python 工具版本可能解(新版可能補 `encoding=`),但版本鎖定理由不變。**ASCII config 是最穩的下限**。
+
 ---
 
 ## 文件導航

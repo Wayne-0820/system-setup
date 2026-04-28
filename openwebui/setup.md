@@ -78,7 +78,15 @@ uv add "litellm[proxy]==1.55.10"
 
 LiteLLM 需要一份 `config.yaml` 告訴它「哪個模型名對應哪個 API」。
 
-**重要**:YAML 和 .env 檔**必須用無 BOM 的 UTF-8**(踩坑紀錄 #3)。
+**重要(寫檔)**:YAML 和 .env 檔**必須用無 BOM 的 UTF-8**(踩坑紀錄 #3)。
+
+**重要(內容)**:**config 內容一律純 ASCII**,不寫中文註解或中文字串值(踩坑紀錄 #4)。中文說明寫進本 MD 文件,不寫進 config 本體。
+
+**範例 vs 實機**:下面的範例是**推薦配置**(Claude 三大模型 sonnet / opus / haiku 都列),實機 config 可能跟範例不同步:
+
+- 是否實裝 opus、是否加新模型(deepseek 等)看實機 model_list 為準
+- `model:` 用 alias(如 `anthropic/claude-sonnet-4-5`)跨版本自動跟最新版,適合長期維護;改成 explicit version(如 `anthropic/claude-sonnet-4-5-20250929`)鎖死特定快照也可,看需求
+- 主規劃窗口接班時應對齊實機 config,而非把範例當實機真相
 
 ```powershell
 cd D:\Work\LiteLLM
@@ -111,7 +119,13 @@ general_settings:
 # 關鍵:無 BOM UTF-8 寫檔
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 [System.IO.File]::WriteAllText("$PWD\config.yaml", $configContent, $utf8NoBom)
+
+# 額外驗證:整檔 ASCII 掃描(踩坑 #4)
+$bytes = [System.IO.File]::ReadAllBytes("$PWD\config.yaml")
+"Non-ASCII byte count: $(($bytes | Where-Object { $_ -gt 127 }).Count)  (期望:0)"
 ```
+
+擴充更多 model(NIM 等)→ 見後段「**擴充:接入 NVIDIA NIM**」。
 
 ### Step 3:建立 LiteLLM 的 .env
 
@@ -238,7 +252,60 @@ uv run open-webui serve
 
 ---
 
-## ⚠️ 踩坑紀錄(這三個坑一定要記住)
+## 擴充:接入 NVIDIA NIM(deepseek-v4 系列)
+
+DeepSeek V4 系列(1.6T 參數,~865 GB)本地跑不了(`../ai-models/local-models.md` 已駁回段),透過 NVIDIA NIM API 雲端呼叫。LiteLLM 1.55.10 原生支援 `nvidia_nim` provider,加進 model_list 即可。
+
+### 前置條件
+
+- NVIDIA Build 帳號 + nvapi- key(從 https://build.nvidia.com 取得)
+- key 寫入 `D:\Work\LiteLLM\.env`,行格式:`NVIDIA_API_KEY=nvapi-...`(只一個 `nvapi-` 前綴,Notepad 編輯後跑 BOM 三 byte 驗證)
+- LiteLLM 1.55.10 `nvidia_nim` provider 預檢:
+
+  ```powershell
+  cd D:\Work\LiteLLM
+  uv run python -c "import litellm; print([p for p in litellm.provider_list if 'nvidia' in p.lower()])"
+  ```
+
+  list 含 `nvidia_nim` → 走原生 provider(下面 model_list 寫法);沒有 → fallback 走 OpenAI 兼容 + 自訂 `api_base: https://integrate.api.nvidia.com/v1`
+
+### model_list 加兩條
+
+在現有 model_list 末尾 append。**注意 LiteLLM nvidia_nim provider 預設讀 `NVIDIA_NIM_API_KEY` 環境變數**,但 .env 用 `NVIDIA_API_KEY`,所以要顯式 `api_key: os.environ/NVIDIA_API_KEY` 做改名映射:
+
+```yaml
+  - model_name: deepseek-v4-pro
+    litellm_params:
+      model: nvidia_nim/deepseek-ai/deepseek-v4-pro
+      api_key: os.environ/NVIDIA_API_KEY
+
+  - model_name: deepseek-v4-flash
+    # NIM upstream may pause occasionally for high-traffic models.
+    # Status: https://build.nvidia.com/deepseek-ai/deepseek-v4-flash
+    litellm_params:
+      model: nvidia_nim/deepseek-ai/deepseek-v4-flash
+      api_key: os.environ/NVIDIA_API_KEY
+```
+
+config 編輯紀律不變:.NET API 寫檔 + BOM 三 byte 驗證 + ASCII 掃描(踩坑 #3 / #4)。
+
+### 啟動驗證(三層)
+
+重啟 proxy 後三層都過才算對接成功:
+
+1. **proxy model 列表**:`curl http://localhost:4000/v1/models` JSON 看到新 model
+2. **啟動 log 載入計數**:LiteLLM startup log 顯示 model 數量符合 model_list 條目數
+3. **真打 NIM(這層不能跳)**:對 proxy `/v1/chat/completions` 帶新 model name,回應 content 真的拿到內容(不是只 LiteLLM 端 200)
+
+NIM 端 timeout / 靜默 hang → 先去 https://build.nvidia.com/<model_id> 看是不是 service banner「We'll Be Right Back」(高流量服務性下線);不是再懷疑技術原因。
+
+### v4-flash reasoning_effort 待驗
+
+`deepseek-ai/deepseek-v4-flash` NIM docs 顯示預設 `reasoning_effort=high` + `max_tokens=16384`,可能即使簡短問句也先生成大量 reasoning trace 才給 final answer。對話框打 `/v1/chat/completions` 若反覆 timeout,試帶 `reasoning_effort: "none"`(LiteLLM 是否 forward 此 param 至 nvidia_nim provider 待驗)。
+
+---
+
+## ⚠️ 踩坑紀錄(這幾個坑一定要記住)
 
 ### 坑 #1:LiteLLM 1.83.12 + uv + Windows → CLI 讀不到 `--config`
 
@@ -316,6 +383,38 @@ $bytes -join ","
 
 **PowerShell 7 的差異**:
 PS 7 的 `Out-File -Encoding utf8` 已改為預設無 BOM,如果全用 PS 7 可以直接用。但混用 PS 5 / PS 7 時,**用 `[System.IO.File]::WriteAllText` 最保險**,不管哪版都對。
+
+### 坑 #4:LiteLLM 1.55.10 在 Windows 繁中系統讀含中文註解的 config → `UnicodeDecodeError`
+
+**症狀**:
+`litellm_config.yaml` 加任何中文註解(即使無 BOM、UTF-8 編碼正確),啟動 proxy 立即 crash:
+
+```
+UnicodeDecodeError: 'cp950' codec can't decode byte 0x9a in position 513:
+illegal multibyte sequence
+```
+
+**原因**:
+LiteLLM 1.55.10 `proxy_server.py` 用 `yaml.safe_load(open(config))` 開檔,**沒帶 `encoding='utf-8'`**。Python `open()` 預設 `locale.getpreferredencoding()` = Windows 繁中系統的 `cp950`。檔案是無 BOM UTF-8(寫對了),但讀檔端用 cp950 解碼 UTF-8 多 byte 中文序列 → 炸。
+
+**這跟坑 #3 的差別**:坑 #3 是**寫檔**端的 BOM 問題(自家 PowerShell 行為),這條是**讀檔**端的 encoding 問題(第三方工具 LiteLLM 行為)。**寫檔再正確也救不了讀檔端的盲點**。
+
+**解法**:
+config 內**所有註解、字串值一律純 ASCII**(英文)。中文說明寫進本 MD 文件,不寫進 config 本體。
+
+寫完 config 跑整檔 ASCII 掃描:
+
+```powershell
+$bytes = [System.IO.File]::ReadAllBytes("$PWD\litellm_config.yaml")
+($bytes | Where-Object { $_ -gt 127 }).Count    # 期望 0
+```
+
+非 0 → 有非 ASCII byte 沒清,啟動會炸,先抓出來看是哪行。
+
+**升版 LiteLLM 可能解嗎**:可能。新版若 LiteLLM 上游補上 `open(config, encoding='utf-8')` 就解。但 1.55.10 鎖版理由(坑 #1)不變,等未來 LiteLLM 整體升版時再驗。
+
+**適用範圍延伸**:
+這條不只 LiteLLM。Windows 繁中系統下任何 Python 1.x 第三方工具讀 config 都可能踩(Open WebUI、CrewAI 等)。**Sysadmin 教訓 5 已記**(`../SYSADMIN_BRIEFING.md`),config 類檔保持 ASCII 是最穩的下限。
 
 ---
 
