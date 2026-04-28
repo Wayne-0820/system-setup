@@ -358,14 +358,26 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 
 repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,5.1 一律改用 .NET API。
 
-### 3. 派工給執行窗口時,主索引最新版要用 raw URL 而不是貼內容
+### 3. 派工 reference 路徑要分執行端類型,不要混
 
-子目錄重構後 GitHub raw URL 變成 `https://raw.githubusercontent.com/Wayne-0820/system-setup/main/<子目錄>/<檔名>.md`,例如:
+派工模板給執行窗口讀「前置必讀文件」時,**reference 的寫法依執行端在不在 Wayne 本機而不同**,主窗口要先想清楚再產模板。
 
-- `https://raw.githubusercontent.com/Wayne-0820/system-setup/main/comfyui/conflicts.md`
+**本地執行端(Claude Code)**:在 Wayne 機器上,直接讀 working tree 用絕對路徑:
+
+- `D:\Work\system-setup\comfyui\setup.md`
+- `D:\Work\system-setup\ai-models\local-models.md`
+
+優點:即時 latest(包含未 push 的 working tree 改動)、無 rate limit、無網路依賴。
+
+**遠端執行端(web Claude / 不在本機的對話)**:用 GitHub raw URL:
+
 - `https://raw.githubusercontent.com/Wayne-0820/system-setup/main/comfyui/setup.md`
 
-派工時貼 URL 而不是內容,執行窗口能驗證它讀到的是最新版,主窗口也省 token。但要注意 GitHub raw URL 有 60/hour rate limit,只貼必要的幾條。
+注意 GitHub raw URL 有 **60/hour rate limit**,只貼必要的幾條。子目錄重構後路徑格式是 `/main/<子目錄>/<檔名>.md`。
+
+**踩過的混用錯誤**:把 raw URL 模板套用到 Claude Code 派工,執行端反而要繞網路抓檔(可能還不是 latest,如果 working tree 有未 push 的改動)。raw URL 紀律是給遠端執行端用的,本地端不適用。
+
+派工前先問自己:**執行端在 Wayne 機器上嗎?** 在 → 本地絕對路徑;不在 → raw URL + 控量。
 
 ---
 
