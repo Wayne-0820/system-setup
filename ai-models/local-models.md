@@ -2,7 +2,7 @@
 
 > 這份文件反映**實際運行**的模型分工(不是探索清單)。
 >
-> 最後同步:2026-04-26
+> 最後同步:2026-04-28
 >
 > 三大本地推理工具:**Ollama**(LLM)、**ComfyUI**(影像生成)、**ComfyUI 內 LLM 節點**(JoyCaption 圖像理解)。
 
@@ -192,6 +192,58 @@ ollama pull qwen3:14b
 
 ---
 
+## 已駁回的選項
+
+> 評估過、決定不採用的方案。寫在這避免日後重複討論、追溯駁回理由。
+> 如果未來條件改變(硬體升級、模型行為更新),可重新評估。
+
+### DeepSeek V4-Pro 本地化
+
+**評估日期**:2026-04 月某次討論
+
+**Wayne 的提議**:本地跑 DeepSeek V4-Pro,當主力 LLM。
+
+**駁回**:本地不可行。
+
+**理由**:
+- 1.6T 參數規模
+- 原始權重 ~865 GB
+- Q4 量化後仍需 ~400 GB VRAM
+- 24GB VRAM(5090 Laptop)差兩個數量級,連 offload 都救不回來
+
+**替代方案**:**透過 NVIDIA NIM API 雲端呼叫**。
+- nvapi- key 已申請完成
+- 接入 LiteLLM 列在 SYSADMIN_BRIEFING.md 中期待辦
+- 接入後可在 Open WebUI / CrewAI 走 LiteLLM endpoint 呼叫 deepseek-v4-pro / deepseek-v4-flash
+
+**重新評估觸發**:
+- 個人硬體升級到 200 GB+ VRAM(短期不會)
+- DeepSeek 釋出更激進的量化版本(< 24 GB)讓 5090 能塞
+
+### Qwen3.6-27B 取代 qwen3:32b
+
+**評估日期**:2026-04-24(Ollama 當天才登記支援 Qwen3.6 系列)
+
+**Wayne 的提議**:用 qwen3.6:27b 取代 qwen3:32b 當 Ollama 主力(更新版本、更小)。
+
+**駁回**:**取代不採用**,但模型保留供實驗用。
+
+**理由**:
+- **不支援 `/no_think` 標籤**:Qwen3.6 系列每次推理都會經過 thinking 階段
+- 對 debug 場景影響大:thinking 過程會吃 5-30 秒等待時間,Wayne 偏好的「快速問答 + 觀察輸出」工作流被打斷
+- qwen3:32b 支援 `/no_think`,可隨需求切換 thinking on/off,實用性更高
+
+**現況**:
+- Qwen3.6-27B 已下載成功,留在 `D:\Models\ollama\`
+- 不刪除(供實驗、對比、特定 thinking-required 場景用)
+- 主力依舊是 `qwen3:32b`
+
+**重新評估觸發**:
+- Qwen 上游補上 `/no_think` 支援(關注 release notes)
+- 找到 Ollama 端 workaround 強制跳過 thinking
+
+---
+
 ## 模型下載 SOP
 
 ### HuggingFace 下載
@@ -227,4 +279,4 @@ ollama pull qwen3:14b
 
 ---
 
-**最後更新**:2026-04-26
+**最後更新**:2026-04-28
