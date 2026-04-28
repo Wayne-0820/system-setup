@@ -379,6 +379,29 @@ repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,
 
 派工前先問自己:**執行端在 Wayne 機器上嗎?** 在 → 本地絕對路徑;不在 → raw URL + 控量。
 
+### 4. Progress report 落地路徑(本地執行端)
+
+本地執行端(Claude Code)跑完任務,progress report 寫到:
+
+`D:\Work\system-setup\progress-reports\<YYYY-MM-DD>_<task-slug>.md`
+
+例:`progress-reports\2026-04-28_litellm-nim-deepseek.md`。日期前綴讓同日多 report 不衝突且自然按時間排序;task-slug 短、kebab-case、描述性。
+
+**生命週期**:
+
+1. 執行窗口寫入 `progress-reports/`
+2. Wayne 把 report 內容貼回主窗口
+3. 主窗口整合進對應 MD(`setup.md` / `local-models.md` / `conflicts.md` 等)
+4. Wayne commit 整合後的 MD,**刪掉 `progress-reports/` 下那份 report 檔**
+
+**為什麼整個目錄 gitignore**(`progress-reports/*` + `!progress-reports/README.md` 例外):
+
+- report 是過渡產物,內容會被分流整合進對應 MD,留著反而散
+- 主窗口要的是「整合進主索引」,不是「累積 raw report 檔」
+- 保留 `README.md` 讓 `git clone` 後目錄存在 + 未來主窗口看到目錄能秒懂用途
+
+**遠端執行端(web Claude)不適用**:web Claude 沒檔案落地,progress report 直接貼對話框。本條規則只給本地執行端。
+
 ---
 
 ## 文件導航

@@ -48,3 +48,8 @@ snapshot-*/
 
 # Claude Code per-project local state (per-user, never share)
 .claude/
+
+# Progress reports — 本地執行端任務暫存,內容會被整合進對應 MD 後刪除
+# (README.md 例外保留,讓目錄結構可見)
+progress-reports/*
+!progress-reports/README.md
