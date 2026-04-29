@@ -62,7 +62,7 @@
 
 | 類型 | 路徑 | 大小 | 用途 |
 |---|---|---|---|
-| Diffusion | D:\Models\sd\diffusion_models\xxx | 9 GB | Klein 9B Base |
+| Diffusion | D:\Models\diffusion\diffusion_models\xxx | 9 GB | Klein 9B Base |
 
 ### 新指令 / 啟動方式
 
@@ -147,8 +147,8 @@ D:\Work\system-setup\start_comfyui.bat
 2. 開新對話時,要 Claude 「結束時用 PROGRESS_TEMPLATE.md 的格式產報告」
 3. 報告產出後,完整複製貼給主規劃窗口
 4. 主規劃窗口會吃掉報告,輸出更新後的 MD
-5. 你把更新後的 MD 放回 repo,commit + push
-6. 下一次新對話開始時,新窗口讀的 repo 已經是最新狀態
+5. 由 Wayne 決定何時把更新後的 MD 放回 repo + commit + push(時機、訊息、批次都是 Wayne 決策)
+6. 下一次新對話開始時,新窗口讀的 repo 已經是 Wayne 同步過的狀態
 
 ---
 

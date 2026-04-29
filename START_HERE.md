@@ -57,7 +57,7 @@ D:\
 │
 ├── Models\
 │   ├── ollama\          # OLLAMA_MODELS 指向
-│   └── sd\              # ComfyUI extra_model_paths.yaml 指向
+│   └── diffusion\              # ComfyUI extra_model_paths.yaml 指向
 │       ├── checkpoints\
 │       ├── diffusion_models\
 │       ├── clip\

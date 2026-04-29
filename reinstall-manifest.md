@@ -106,8 +106,8 @@ Write-Host "記得檢查 manual-installs.md 是否需要更新" -ForegroundColor
 | DaVinci Resolve Studio | 20.x | blackmagicdesign.com | C | Database/Cache/Gallery → D:\Cache\Resolve;RESOLVE_SCRIPT_API / LIB 環境變數 |
 | LDPlayer | 9.x | ldplayer.net | D:\Emulator\LDPlayer | 實例解析度要對齊 Ldbot config |
 | Synology Drive Client | x.x | synology.com | C | 同步目標 D:\Sync |
-| ComfyUI portable | 最新 7z | github.com/comfyanonymous | D:\Work\ComfyUI_portable | extra_model_paths.yaml 指 D:\Models\sd |
-| Stable Diffusion Forge(若裝) | git | github.com/lllyasviel | D:\Work\Forge | 模型目錄 D:\Models\sd |
+| ComfyUI portable | 最新 7z | github.com/comfyanonymous | D:\Work\ComfyUI_portable | extra_model_paths.yaml 指 D:\Models\diffusion |
+| Stable Diffusion Forge(若裝) | git | github.com/lllyasviel | D:\Work\Forge | 模型目錄 D:\Models\diffusion |
 
 ## API 服務(要重新登入 / 拿 key)
 
@@ -131,7 +131,7 @@ Write-Host "記得檢查 manual-installs.md 是否需要更新" -ForegroundColor
 - [ ] RESOLVE_SCRIPT_API = (DaVinci 安裝後的路徑)
 - [ ] RESOLVE_SCRIPT_LIB = (fusionscript.dll 路徑)
 - [ ] LM Studio 模型目錄 → D:\Models\lmstudio(GUI 設)
-- [ ] ComfyUI extra_model_paths.yaml → D:\Models\sd
+- [ ] ComfyUI extra_model_paths.yaml → D:\Models\diffusion
 ```
 
 ---

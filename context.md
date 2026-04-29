@@ -40,7 +40,7 @@ D:\
 │
 ├── Models\         # 模型權重
 │   ├── ollama\               # OLLAMA_MODELS 指到這
-│   └── sd\                   # SDXL / FLUX / Klein 系列共用(extra_model_paths.yaml 指向)
+│   └── diffusion\                   # SDXL / FLUX / Klein 系列共用(extra_model_paths.yaml 指向)
 │       ├── checkpoints\
 │       ├── diffusion_models\
 │       ├── clip\

@@ -102,7 +102,7 @@ D:\
 │
 ├── Models\
 │   ├── ollama\                       # OLLAMA_MODELS 指這
-│   └── sd\                           # ComfyUI extra_model_paths.yaml 指這
+│   └── diffusion\                           # ComfyUI extra_model_paths.yaml 指這
 │       ├── checkpoints\
 │       ├── diffusion_models\
 │       ├── clip\
@@ -133,7 +133,7 @@ D:\
 
 1. **C 槽極簡**:只放 OS + 軟體執行檔,**不放資料 / 模型 / 快取**
 2. **D 槽分區**:`Work\` / `Models\` / `Cache\` / `Media\` / `Recovery\`,不混
-3. **模型統一**:SD / FLUX / ControlNet / LoRA → 一律放 `D:\Models\sd\`
+3. **模型統一**:SD / FLUX / ControlNet / LoRA → 一律放 `D:\Models\diffusion\`
 4. **ComfyUI 巢狀不拍平**:跟官方範例對齊
 5. **ComfyUI 輸出**:走 `--output-directory "D:\Media\AI_Raw\ComfyUI_Output"`
 6. **絕對路徑寫死**,不用 `%VAR%`
@@ -228,6 +228,9 @@ ComfyUI 工作流在另一個 Claude 窗口處理中,CrewAI 還沒建。**現在
 3. 判斷哪份 MD 該更新
 4. 產出更新後的 MD 給 Wayne
 5. 給 Wayne 整合後的決策建議
+6. **派工模板的「邊界」段不寫「Wayne 自己做 commit」這類引導語**。Commit / push 是 Wayne 的決策範疇,不在執行端視野內,主窗口產派工模板時不在邊界段、step 描述、待辦項中提及「commit」或「push」。執行端 progress report 的「待辦」段若出現「Wayne commit + push」當項目,屬於行為偏移(主窗口 / 執行端任一方植入),整合時主窗口要忽略該項並下次派工時收緊措辭。
+
+   **核心紀律由 user-level `CLAUDE.md` 硬規則 4 cover**(跨所有 Wayne 機器 Claude Code session 自動讀)。本條是主窗口端的派工模板紀律對應。
 
 ### 執行窗口職責
 
@@ -424,6 +427,20 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 **適用範圍**:不只 LiteLLM。Open WebUI、LiteLLM、CrewAI、未來任何 Windows 上跑的 Python 1.x 工具都可能踩。**config 類檔的中文註解該寫進對應 MD 文件,不寫進 config 本體**。
 
 升 Python 工具版本可能解(新版可能補 `encoding=`),但版本鎖定理由不變。**ASCII config 是最穩的下限**。
+
+### 6. Bulk rename 派工的 grep pattern 完整性紀律
+
+派「目錄 / 檔名 rename + 全 repo 同步」任務時,grep pattern 必須涵蓋三類:
+
+(A) **絕對路徑全形式** — 帶磁碟代號(`D:\Models\sd\`)+ 不帶代號(`Models\sd\`)+ 正反斜線雙寫法(`Models/sd`)
+
+(B) **末尾斜線雙形態** — `D:\Models\sd\`(帶尾)+ `D:\Models\sd`(不帶尾,常見於表格欄位 / 行尾)
+
+(C) **樹形圖獨立節點** — `├── sd\` / `└── sd\`(目錄結構樹形圖把目錄拆成「父目錄一行 + 子目錄一行」,單獨 grep `Models\sd` 抓不到後面那行)
+
+**實證**:2026-04-29 `sd → diffusion` rename 派工模板只給 4 個 pattern(`D:\Models\sd` / `Models\sd` / `Models/sd` / `D:/Models/sd`),漏抓樹形圖節點 3 處 + 表格欄位末無尾斜線 4 處,執行端二次補抓才完整。
+
+**派工模板紀律**:bulk rename 派工的 grep section 預設列上這 3 類 pattern,讓執行端不必自己想完整性。
 
 ---
 

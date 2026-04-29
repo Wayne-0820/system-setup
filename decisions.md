@@ -174,8 +174,8 @@ npm i -g @anthropic-ai/claude-code
 | 6 | DaVinci Resolve Studio | C | 裝完進 Preferences 改 Database / Cache / Gallery → `D:\Cache\Resolve`;設 `RESOLVE_SCRIPT_API` / `RESOLVE_SCRIPT_LIB` 環境變數 |
 | 7 | LDPlayer | `D:\Emulator\LDPlayer` | 重建實例時**解析度一定要跟 Ldbot config 對齊**,其他隨意 |
 | 8 | Synology Drive Client | C | 同步目標 → `D:\Sync` |
-| 9 | ComfyUI portable | `D:\Work\ComfyUI_portable` | 從 GitHub release 下 7z,`extra_model_paths.yaml` 指到 `D:\Models\sd` |
-| - | Stable Diffusion WebUI Forge(選用) | `D:\Work\Forge` | 若裝,模型目錄也指到 `D:\Models\sd` |
+| 9 | ComfyUI portable | `D:\Work\ComfyUI_portable` | 從 GitHub release 下 7z,`extra_model_paths.yaml` 指到 `D:\Models\diffusion` |
+| - | Stable Diffusion WebUI Forge(選用) | `D:\Work\Forge` | 若裝,模型目錄也指到 `D:\Models\diffusion` |
 
 ## 資料夾結構
 

@@ -56,10 +56,10 @@
 
 ### 2. 靜態圖(角色、場景、keyframe)
 
-**ComfyUI 主力**(已在 `decisions.md` 決定)。模型放 `D:\Models\sd\`:
+**ComfyUI 主力**(已在 `decisions.md` 決定)。模型放 `D:\Models\diffusion\`:
 
 ```
-D:\Models\sd\
+D:\Models\diffusion\
 ├── checkpoints\     # SDXL、Flux、Pony 等底模
 ├── loras\
 ├── vae\

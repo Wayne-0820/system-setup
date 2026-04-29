@@ -1,6 +1,6 @@
 # Session 交接快照 — 給下一個主窗口 Claude
 
-> **建立日期**:2026-04-29
+> **建立日期**:2026-04-29(v2,蓋掉同日 v1)
 > **適用對話**:Wayne 接續本次 sysadmin session 後開新對話用
 > **使用方式**:Claude Projects 已啟用,本檔在 project knowledge 中自動載入,新主窗口開新對話即讀
 > **角色定位**:你是接班的主窗口 = sysadmin + 決策諮詢
@@ -11,258 +11,270 @@
 
 ### 結構現況(2026-04-29)
 
-跟 04-28 handoff 結構一致 + 新增 `.claude/skills/`:
+跟 04-28 結構一致 + `.claude/skills/`(04-29 v1 已加)+ 本輪新增 `comfyui-workflows/Flux-fill_OneReward_萬物移除_10步.json`:
 
 ```
 D:\Work\system-setup\
 ├── README.md
 ├── START_HERE.md
-├── SYSADMIN_BRIEFING.md         ← 教訓 1-5(本次新增 5)
-├── PROGRESS_TEMPLATE.md
-├── CLAUDE.md                    ← project-level(本次 v2.0,從 v1.0 拆分)
-├── context.md
-├── decisions.md
-├── reinstall-manifest.md
+├── SYSADMIN_BRIEFING.md         ← 教訓 1-6(本輪新增 6;教訓 7 暫存主窗口待整合)
+├── PROGRESS_TEMPLATE.md         ← 本輪修使用說明 5-6 行(commit 紀律)
+├── CLAUDE.md                    ← project-level
+├── context.md                   ← 路徑 sd → diffusion 已同步
+├── decisions.md                 ← 路徑 sd → diffusion 已同步
+├── reinstall-manifest.md        ← 路徑 sd → diffusion 已同步
 ├── baseline-trigger.md
-├── .claude\skills\              ← 本次新增
+├── .claude\skills\
 │   ├── log-lesson\SKILL.md
 │   ├── progress-report\SKILL.md
 │   └── raise-pitfall\SKILL.md
 ├── progress-reports\            ← gitignored 整體,README.md 例外
-├── comfyui\
-├── ai-models\                   ← local-models.md 雲端 API 表 + 已駁回段更新
-├── davinci\
+├── comfyui-workflows\
+│   ├── (5 個既有 workflow JSON)
+│   └── Flux-fill_OneReward_萬物移除_10步.json   ← 本輪新增
+├── comfyui\                     ← 本輪有「待整合 patch」未進(見第 4 段)
+├── ai-models\                   ← 本輪有「待整合 patch」未進
+├── davinci\                     ← 路徑 sd → diffusion 已同步
 ├── ldbot\
-├── openwebui\                   ← setup.md 加擴充 NIM 段 + 踩坑 #4
+├── openwebui\
 └── tools\
 ```
 
-**Wayne user-level CLAUDE.md** 在 `C:\Users\Wayne\.claude\CLAUDE.md`(不入這個 repo,跨所有 working directory 自動載入)。
+**Wayne user-level CLAUDE.md** 在 `C:\Users\Wayne\.claude\CLAUDE.md`(不入 repo,跨所有 working directory 自動載入)。本輪改寫硬規則 4(commit 紀律)。
 
-### Git 狀態
+### Git 狀態(本輪結束時)
 
-main 分支跟 origin/main 同步,working tree 應該乾淨。最近 commit 鏈(從新到舊,概略):
+`origin/main` 跟 working tree 之間累積**多批未 commit 變更**(Wayne 自己決定何時 commit / 拆批)。最近 commit 鏈反映 04-28 + 04-29 v1 的內容。本輪 04-29 v2 涉及的所有變更**都還沒進 commit**:
 
-```
-feat(skills): add three project-level skills for workflow acceleration
-docs: gitignore exception for .claude/skills/
-docs(claude.md): split into user-level + project-level
-docs: integrate NIM deepseek deployment + cp950 lesson
-docs: add progress-reports/ for local exec handoffs
-docs(briefing): clarify exec-target routing for handoff references
-docs(ai-models): add 'rejected options' section
-docs: post-restructure cleanup + rgthree catch-up landing
-```
-
-(實際 commit message 可能略有差異,以 `git log --oneline -10` 為準)
+- `D:\Models\sd\` → `D:\Models\diffusion\` rename(yaml + 9 MD,22 處引用)
+- 教訓 6(grep pattern 完整性)+ huggingface-download-tricks.md 兩段 SOP append
+- Commit / push 紀律改寫(user-level CLAUDE.md 硬規則 4 / PROGRESS_TEMPLATE 使用說明 / SYSADMIN_BRIEFING 主窗口職責第 6 條)
+- Workflow #2 重建(comfyui-workflows/ 新增 1 檔;模型本身在 D:\Models\,不入 repo)
+- **6 份待整合 patch(主窗口端尚未產,本檔第 4 段詳述)**
 
 ---
 
-## 2. 本次 session 完成的事 + 為什麼這樣設計
+## 2. 本輪 session 完成的事 + 為什麼這樣設計
 
-### 2.1 LiteLLM proxy 加 NVIDIA NIM 兩個 deepseek 模型
+### 2.1 D 槽 Models 資料夾 rename:`sd\` → `diffusion\`
 
-**任務目標**:`D:\Work\LiteLLM\litellm_config.yaml` 加 `deepseek-v4-pro` / `deepseek-v4-flash` 透過 NIM 雲端呼叫,兌現 `ai-models/local-models.md` 「已駁回 → DeepSeek V4-Pro 本地化」段的「替代方案」承諾。
+**動機**:Wayne 接班 audit 時抓到「sd 命名是 SD WebUI 時代慣例,實際內容是 FLUX/Klein/SDXL/未來 Qwen Image,語意不一致」。這是 SYSADMIN_BRIEFING 教訓 1「audit repo 結構合理性」的延伸應用 — 主窗口接班時應主動檢查資料夾命名是否反映實際內容。
 
-**結果**:
-- v4-pro:三層驗證全通,production-ready
-- v4-flash:NIM upstream 暫停服務(build.nvidia.com「We'll Be Right Back / high traffic」),config 條目就位待復服。**復服後直接重打 chat completion 即可,無需改 config**
+**執行**:
+- 實機 rename `D:\Models\sd\` → `D:\Models\diffusion\`(同槽 metadata 操作,59.88 GB / 17 檔 / 9 子資料夾不動)
+- `extra_model_paths.yaml` `base_path` 改路徑
+- 全 repo 9 份 MD 22 處引用同步
+- 雙驗證器(stale-name grep + BOM 殘留)全綠
+- ComfyUI 煙測**用 HTTP API `/object_info` 拉 dropdown**(比 GUI 載 workflow 更直接驗 yaml 解析端,本輪首次驗證有效)
 
-**踩坑(三個)**:
-1. .env 的 NVIDIA_API_KEY 前綴重複 `nvapi-nvapi-`(Notepad 編輯時複製貼上多帶一次前綴)+ Notepad 預設加 BOM
-2. **LiteLLM 1.55.10 在 Windows 繁中系統讀含中文註解的 config → `UnicodeDecodeError: cp950`** — Python `yaml.safe_load(open(file))` 沒帶 `encoding='utf-8'`,Windows 預設 codepage = cp950 解 UTF-8 中文 byte 失敗。**這條已沉澱進 SYSADMIN_BRIEFING 教訓 5 + openwebui/setup.md 踩坑 #4**
-3. NIM upstream 服務性下線時 LiteLLM 不吐 error log,看起來像 hang(實際是 silent timeout)— 派工要求「不能靠 LiteLLM 端 200 就宣告成功」,真打 chat completion 才知
+**踩坑沉澱為教訓 6**(在 SYSADMIN_BRIEFING):bulk rename 派工的 grep pattern 必須涵蓋三類 — 絕對路徑全形式 / 末尾斜線雙形態 / 樹形圖獨立節點。原派工漏抓樹形圖 3 處 + 表格欄位末無尾斜線 4 處,執行端二次補抓才完整。
 
-**派工 progress report**:已在 Wayne 整合進 MD 後刪除(progress-reports/ 內無遺留)。
+### 2.2 huggingface-download-tricks.md 兩段 SOP append
 
-### 2.2 SYSADMIN_BRIEFING.md 新增教訓 5
+**「命名」段**:HF 通用 placeholder 檔名(`unet_fp8` / `diffusion_pytorch_model`)→ 必須加 repo 識別前綴改名。例外:HF 原檔名已含識別性 → 維持原檔名。
 
-**教訓 5:Windows + 繁中系統下,第三方工具讀 config 檔的 ASCII 紀律**。延伸自教訓 2(BOM)— 教訓 2 是**寫檔**端,教訓 5 是**讀檔**端,寫檔再正確也救不了讀檔端的 cp950 預設 encoding。**Config 類檔(yaml/json/toml/.env)一律純 ASCII**,中文進對應 MD 不進 config 本體。
+**「路徑慣例」段**:模型落地分類表 + LLM 類例外(寫死 `LLavacheckpoints`)+ HTTP API 驗證範例。
 
-### 2.3 CLAUDE.md 拆分成 user-level + project-level
+**為何沉澱**:#2 workflow 重建時遇到 2 例 placeholder 需改名,#1 workflow 本輪驗證命名實踐有效,把 SOP 落入文件以後重建中國 workflow 不必每次重新討論。
 
-原本單一 `D:\Work\system-setup\CLAUDE.md`(v1.0)。本次拆成兩份:
+### 2.3 Commit / push 紀律核心改寫(三檔同步)
 
-| 層級 | 路徑 | 範圍 |
-|---|---|---|
-| User-level | `C:\Users\Wayne\.claude\CLAUDE.md` | 跨所有 repo 通用:寫檔 SOP / config ASCII / secret / 不 commit / 雙驗證器 / STOP 觸發點 / 行為紀律 |
-| Project-level | `D:\Work\system-setup\CLAUDE.md`(v2.0) | 只 system-setup 適用:repo 介紹、結構導航、本地絕對路徑、progress-reports 落地、不擅自動 repo 結構 |
+**動機**:Wayne 在第二輪整合報告時抓到執行端 progress report 的「待辦」段列「Wayne commit + push」當項目,等同把 Wayne 決策動作植入執行端流程,職責越界。
 
-**理由**:user-level 自動載入任何 working directory(包括 LiteLLM、ComfyUI、LDPlayer 等),通用紀律全 cover;project-level 只放 repo specific。
+**改寫**:
+- **user-level `CLAUDE.md` 硬規則 4** — 從「不主動 git commit / push」加強成「不在 progress report 列、不在對話暗示、不草擬 message,且不存在『自動 commit』例外」
+- **PROGRESS_TEMPLATE.md 使用說明** — 5-6 行改成「由 Wayne 決定何時 commit + push」(時機、訊息、批次都是 Wayne 決策)
+- **SYSADMIN_BRIEFING.md 主窗口職責第 6 條** — 派工模板的「邊界」段不寫「Wayne 自己做 commit」這類引導語
 
-### 2.4 三個 Skills 落地(Claude Code 工作流加速)
+**為何走核心紀律改寫不是教訓段**:這不是「踩坑後的紀律」,是「角色邊界本來就該這樣」,該直接改 CLAUDE.md 的核心條目,不該降階成教訓。
 
-Project-level skills 在 `.claude/skills/`:
+### 2.4 Workflow #2「Flux-fill OneReward 萬物移除」完整重建
 
-| Skill | 觸發 | 動作 |
-|---|---|---|
-| `log-lesson` | 「這個寫進教訓」/「sysadmin 教訓」/ `/log-lesson` | 把當下教訓格式化 append 到 SYSADMIN_BRIEFING.md 教訓段 |
-| `progress-report` | 派工跑完最後 step / 「寫 progress report」 | 按 PROGRESS_TEMPLATE 產 report 到 progress-reports/(不 commit) |
-| `raise-pitfall` | 「這個踩坑要記下來」/ `/raise-pitfall <工具> <簡述>` | 把環境踩坑寫進對應子目錄的 setup.md 踩坑段 |
+**主軸任務**。18 節點從 RunningHub 雲端版移植本地版。
 
-**全 project-level**(不放 user-level)— 因為三個都寫死 `D:\Work\system-setup\` 路徑。
+**模型下載清單**(總 16.83 GB):
 
-`.gitignore` 改例外規則:`.claude/*` 仍 ignore,但 `!.claude/skills/` 例外。
+| 檔 | 來源 | 大小 | 備註 |
+|---|---|---|---|
+| `flux.1-fill-dev-OneReward-fp8.safetensors` | `yichengup/flux.1-fill-dev-OneReward` | 11.085 GB | placeholder 改名(原 `unet_fp8`) |
+| `Flux-Turbo-Alpha.safetensors` | `alimama-creative/FLUX.1-Turbo-Alpha` | 0.646 GB | placeholder 改名(原 `diffusion_pytorch_model`) |
+| `removal_timestep_alpha-2-1740.safetensors` | `lrzjason/ObjectRemovalFluxFill`(Wayne 預下) | 0.086 GB | 原檔名已有識別性,不改 |
+| `clip_l.safetensors` | `comfyanonymous/flux_text_encoders` | 0.229 GB | 不改 |
+| `t5xxl_fp8_e4m3fn.safetensors` | 同上 | 4.558 GB | 不改 |
+| `ae.safetensors` | `Comfy-Org/z_image_turbo/split_files/vae/` | 0.312 GB | 不改 |
 
-### 2.5 Claude Projects 啟用
+**JSON 本地化 5 處**:
+- LoRA 名去中文後綴(`removal_timestep_alpha-2-1740_物品移除.safetensors` → `removal_timestep_alpha-2-1740.safetensors`)
+- RunningHub auth token 清空(rgthree Image Comparer widget_values)
+- LoadImage clipspace 路徑清空
+- VAELoader 名 `ae.sft` → `ae.safetensors` 對齊本地實際檔
+- **#113 Mask Fill Holes 節點換成 KJNodes `GrowMaskWithBlur`**(等價替代,參數設 `expand=0, blur_radius=0, fill_holes=True`)
 
-Wayne 在 claude.ai 建 Project(主窗口接班用),pre-load:
+**為何不裝 was-node-suite-comfyui 而走替代節點路線**:該 pack 2025-06 已被作者 archived,為了 1 個節點裝整 archived pack 維護負擔不對等。KJNodes 已裝且有等價節點,優選。Wayne 拍板。
 
-- SYSADMIN_BRIEFING.md
-- CLAUDE.md(project-level)
-- 最新 SESSION_HANDOFF_*.md(就是這份)
-- README.md
-- context.md
+**雙煙測通過**:
+- HTTP API `/object_info`:6 個檔 + 17 個節點 type 全可達
+- GUI 跑通:VRAM 高峰 **24088 MB**(逼近 5090 Laptop 24 GB 物理上限)、生成時間 **93.68 秒 / 10 步**(這是 Wayne 第二次有畫 mask 的真實數據;首跑 84.08 秒沒畫 mask,**不採用**)
+- 輸出檔:`D:\Media\AI_Raw\ComfyUI_Output\ComfyUI_00002_.png`(3.45 MB)
 
-Custom instructions 已寫進 Project 設定。新主窗口開新對話自動帶上下文,**不必再貼 SYSADMIN_BRIEFING + handoff**。
+### 2.5 兩個 STOP 點處理
 
-子目錄 MD(comfyui/setup.md / openwebui/setup.md / ai-models/local-models.md 等)**不在 Project knowledge** — 主窗口需要時讓 Wayne 直接貼。
+**STOP 1**:Mask Fill Holes 節點不存在,候選 pack `was-node-suite-comfyui` 已 archived。Wayne 拍板走「找替代節點」路線(選項 3),CC 找到 KJNodes `GrowMaskWithBlur` 等價(都用 `scipy.ndimage.binary_fill_holes`)。
+
+**STOP 2**:派工指定的 ae.sft 來源 `Comfy-Org/flux1-dev` 沒 ae 單檔(只有 all-in-one 整合包)。Wayne 拍板走 `Comfy-Org/z_image_turbo/split_files/vae/ae.safetensors`(Comfy-Org 官方鏡像,非 gated)。
+
+**派工模板教訓**:下次寫派工時 ae 來源更正成 `Comfy-Org/z_image_turbo`,別再寫 `Comfy-Org/flux1-dev`。
 
 ---
 
-## 3. 進行中 / 等 Wayne 拍板
-
-### 主線:依舊是 ComfyUI 中國 workflow 重建(7 個優先)
+## 3. 中國 workflow 重建路線(本輪不變)
 
 | 優先 | Workflow | 狀態 |
 |---|---|---|
-| 1 | JoyCaption Beta1 反推 | ✅ 完成 |
-| 2 | Flux-fill OneReward 萬物移除 | 待開始 |
-| 3 | Kontext + ControlNet 姿態改變 | 待開始 |
+| 1 | JoyCaption Beta1 反推 | ✅ 完成(04-26) |
+| 2 | **Flux-fill OneReward 萬物移除** | ✅ **本輪完成(04-29)** |
+| 3 | Kontext + ControlNet 姿態改變 | 待開始(下個主軸候選) |
 | 4 | Qwen3 TTS 聲音克隆 | 待開始 |
 | 5 | Qwen image 擴圖 | 待開始 |
 | 6 | 智能多角度生成 | 待開始 |
 | 7 | Qwen3 TTS 聲音設計 | 待開始 |
 
-### 路線決策(本次新增,**重要**)
+---
 
-Wayne 在 session 末段拍板路線 **(A) 維持現有優先級:影片是主軸,系統建置是基礎設施**,但有三個問題 Wayne 自己該想清楚才動工(主窗口可在合適時機 raise,但不主動催):
+## 4. ⚠️ 主窗口端「待整合 patch」清單(下次接班務必處理)
 
-1. **第一集真有上 YouTube 嗎?**(SYSADMIN_BRIEFING 寫「未上傳,存檔處理」)沒上傳 = 受眾假設(視障 + 幼童 + 純聽眾)還沒驗證,「1 週沒起色」停損條件還沒啟動
-2. **「系統建好」對 Wayne 的定義是什麼?** ComfyUI 7 workflow 全建?CrewAI 跑通?C 槽 baseline?還是模糊「定型」?沒明確標準的目標可能是逃避產出的合理化
-3. **Wayne 是不是其實只是不想做第二集?** 第一集踩 8 個坑,第二集會踩更多,「先建系統」可能是繞開累活的潛意識行為
+本輪 #2 workflow 跑完後產生的工作成果**還沒整合進對應 MD**。下次主窗口接班時,Wayne 會貼這張清單給你,你逐一產 patch:
 
-主窗口接班時**不主動催 Wayne 回答這三題**,Wayne 自己會回來談。但記著當 Wayne 又想「先建系統再產內容」時,主窗口該禮貌 raise 這三題當提醒。
-
-### Subagent 安排(暫不裝,等真要用)
-
-本次 session 探索過 agency-agents(86.9k star repo,147 個 markdown agent files),驗證過 4 個對 Wayne 工作流有交集:
-
-| Agent | 觸發時機 | 狀態 |
+| # | 目標 MD | 該加的內容 |
 |---|---|---|
-| Codebase Onboarding Engineer | scope ComfyUI custom node / 接 LDPlayer 模組 | **暫不裝**(等真高頻時) |
-| Git Workflow Master | 日常 commit / rebase 紀律 | **暫不裝** |
-| Image Prompt Engineer | 第二集動工後出視覺 | **不裝** |
-| Video Optimization Specialist | 第一集真上傳後 review packaging | **不裝** |
+| 1 | `comfyui/setup.md` — Diffusion / LoRA / CLIP / VAE 表格 | 6 個新檔(OneReward fp8 11.085 GB / Flux-Turbo-Alpha 0.646 GB / removal_timestep 0.086 GB / clip_l 0.229 GB / t5xxl_fp8 4.558 GB / ae.safetensors 0.312 GB)|
+| 2 | `comfyui/workflows.md` — 圖像編輯系列 | 加新 workflow 條目(18 節點 / VRAM 24088 MB / 93.68 秒 / 10 步,**不要寫首跑 84.08 秒**),「待建立 workflow」清單優先 2 打勾 |
+| 3 | `comfyui/conflicts.md` | (a) 新增「上游 archived pack 警示」段,was-node-suite-comfyui 進去 (b) 「KJNodes `GrowMaskWithBlur` ≡ WAS `Mask Fill Holes`」等價對應 |
+| 4 | `comfyui/conflicts-kjnodes.md` | 記下 #2 workflow 對 `GrowMaskWithBlur` 的依賴(KJNodes 上游若 breaking change 會失效) |
+| 5 | `comfyui/huggingface-download-tricks.md` 命名段 | 實例表加 2 例(`unet_fp8` / `diffusion_pytorch_model` 改名前後對照) |
+| 6 | `ai-models/local-models.md` | FLUX.1 系列補 OneReward fp8 + Turbo-Alpha 條目 |
 
-**為什麼暫不裝**:Subagent 比 stock Claude Code **多 7 倍 token**(官方數字),自動 delegate 觸發頻率高時 Pro plan 額度可能 15 分鐘耗完。先把 Skills + Projects 用一段時間驗證價值,再決定要不要加 subagent。
+**還有兩條教訓候選暫存**(下次主窗口可問 Wayne 是否要進):
 
-**未來裝的條件**:Wayne 體感「stock Claude Code 在 scope 別人 code 時建議太多 / 太雜」、「日常 commit 有 git history 越來越亂的趨勢」,才回來裝前 2 個。
-
-### 衝突管理:WAS 安裝在等(跟 04-28 同)
-
-`was-node-suite-comfyui` 計畫中的下一個 pack,Wayne 會去 ComfyUI Manager 點 Install 看 conflicts 數字,然後派工執行窗口。派工模板格式詳見 04-28 handoff 第 3 段。
+- **教訓 7 候選**(line ending bulk patch):2026-04-29 commit 紀律改寫時 CC 踩到「兩檔 LF only 一檔 CRLF」,解法是「寫回時保留原 line ending,避免污染 git diff」。我推進 SYSADMIN_BRIEFING 教訓段。
+- 教訓 8(中國 workflow 簡轉繁)**已撤銷**,Wayne 不做。
 
 ---
 
-## 4. 還沒做的待辦(Wayne 沒主動要,但記著)
-
-延續 04-28 那份,跟本次 session 結尾狀態一致:
+## 5. 還沒做的待辦(從 SESSION_HANDOFF v1 延續)
 
 | # | 待辦 | 觸發條件 |
 |---|---|---|
-| 1 | NIM 復服後重試 v4-flash chat completion | NIM upstream 復服(看 build.nvidia.com 服務 banner) |
-| 2 | 中國 workflow 模型下載(~100-150 GB) | 重建 workflow 進到優先 2 之後 |
-| 3 | CrewAI 第一條 agent pipeline | 1-2 個月後,等 ComfyUI workflow 告一段落 + 第二集做完 |
-| 4 | 第一次 C 槽 baseline 映像 | 觸發條件全達成才做(workflow ≥3 + CrewAI 跑通 + DaVinci preset + 系統定型) |
+| 1 | NIM 復服後重試 v4-flash chat completion | NIM upstream 復服 |
+| 2 | 中國 workflow #3-#7 模型下載(~100-150 GB,不含本輪已下的) | #2 完成後可開始 |
+| 3 | CrewAI 第一條 agent pipeline | 1-2 個月後 |
+| 4 | 第一次 C 槽 baseline 映像 | 觸發條件全達成才做 |
 | 5 | SageAttention issue #357 修復後重編 | 上游修復通知 |
 | 6 | Hasleo Rescue USB 6 個月驗證 | 約 2026-10 月底 |
-| 7 | 繁中 TTS 避雷字典(累積已知會錯字) | 第二集動工前該整理 |
+| 7 | 繁中 TTS 避雷字典 | 第二集動工前 |
 
-主窗口紀律:**這些是「記著但不主動催 Wayne 做」**。Wayne 自己會決定何時做。主窗口角色是「他來問就提供選項 + 風險」,不是「主動建議他做什麼」。
+主窗口紀律:這些**記著但不主動催 Wayne 做**。Wayne 自己會決定何時做,他來問就提供選項 + 風險。
 
 ---
 
-## 5. Wayne 工作風格(本次 session 觀察補充)
+## 6. Wayne 工作風格(本輪 session 觀察補充)
 
-延續 04-28 那份(細節 / 容易誤解的點都還適用)。本次 session 補幾條觀察:
+延續 04-28 + 04-29 v1 的觀察。本輪補幾條:
 
 ### 細節
 
-- **不接受過早推薦**:本次 session 我推 subagent 太早,沒講清楚 token 成本,Wayne 拍 (A) 路線後我才回認「之前推得太早 + 資訊不對等」。**主窗口推方案要先講成本 / 限制 / 適配條件**,不只講優點
-- **要求邏輯一致性**:本次 session 我推「MCP 接 GitHub 讓主窗口讀 repo」,Wayne 抓「web_fetch 對 GitHub 60/hour rate limit + raw URL allowlist 拒絕,你自己 SYSADMIN_BRIEFING 教訓 3 都寫了這條紀律」— **主窗口推方案前要對照自己寫過的紀律,不前後矛盾**
-- **拍板簡短回答**:Wayne 經常用一個字母 (A/B/C) 拍板,不重複 context。主窗口收到單字回應要對照上文準確 parse,不要追問
+- **接班 audit 比想像中更主動**:本輪 Wayne 是看到派工模板裡 `D:\Models\sd\` 才回頭問「sd 是不是 SD WebUI 命名」,**主窗口應該在接班時就抓到**,而不是等 Wayne 順手提才察覺。教訓 1 的「audit repo 結構合理性」要加一條子問題:**資料夾命名跟實際內容對齊嗎?**
+- **Wayne 抓邏輯一致性極快**:本輪兩個強烈例子 — (a) 「commit/push 是 Wayne 決策範疇」直接點出主窗口 / 執行端的職責邊界沒寫清楚 (b) 教訓 9 候選(GUI 互動驗證標準)Wayne 直接拒絕(理由沒寫,但合理推測 — 不該為單次失誤沉澱成系統規則)
+- **拍板極簡**:單字母 / 兩字組合(`A` / `B+B` / `A`)是 Wayne 標準回覆,不重複 context。主窗口收到要對照上文準確 parse
 
 ### 容易誤解的點
 
-- **「想知道適合什麼應用」≠ 「列功能清單」**:Wayne 問 agency-agents 適合他什麼應用,我第一輪寫了一堆通用建議,Wayne 重問後我才聚焦到「**對他工作流真有交集的 agent**」。raise 推薦時優先看「對 Wayne 三條主軸(YouTube / ComfyUI / Coding)真有交集」,不是 agent 自身名氣
-- **「能不能做」要拆成兩條**:Wayne 問「subagent 開三個做 context / 紀錄錯誤 / 彙整能不能?」,我先答「subagent 不能跨 session 持久化」(架構問題),後答「skill inject 不必要」(實作問題)。**主窗口要先指出方向錯,再講細節技術問題**,不要直接陷進實作細節
-- **「工作流加速」是真實需求**:Wayne 說「最需要工作流加速」是 session 中最明確的真實需求,Skills + Projects 對這條有差異化價值,subagent 對「替代主窗口決策」沒辦法解(已認證)。記著 Wayne 真正體感的是「省接班貼 MD」「省派工模板手寫」「省教訓格式化」,不是「叫 Claude 變多個變很厲害」
+- **「workflows IGNORE」≠ 「整個目錄 gitignore」**:Wayne 一句「我想讓 comfyui-workflows 裡面的 IGNORE,對結構有什麼影響?」我第一輪解讀成「整個目錄 gitignore」並寫了一大段論證為什麼不該做。Wayne 二輪補一句「裡面有簡體字,改繁體字」我才發現他是在問「個別檔內容處理的副作用」,**根本跟 gitignore 沒關係**。教訓:**Wayne 講話省略主詞時,我該先問「你說的 IGNORE 是指 git 還是 OpenCC 那種 ignore」**,不要直接往一個解讀深挖
+- **「測試圖選擇」是建議不是要求**:本輪 Wayne 最終用藤椅照片(自選),我前面建議的「鏤空椅子 / 戒指」沒被採用 — Wayne 會聽建議但用自己判斷選素材,主窗口別堅持自己的建議
+- **「重測」是因為流程沒到位,不是結果有疑**:本輪 Wayne 第一次跑沒畫 mask 是因為**派工模板 Step 6b 沒寫「右鍵 MaskEditor 畫 mask」**這條使用前置。Wayne 收工時提「需要重測」,我問清是 A(功能沒過)還是 B(數據污染),他選 B — **派工漏寫 + 數據要清理 + Wayne 不要為單次失誤沉澱規則**,三條並存
 
 ---
 
-## 6. 接班開場 SOP
+## 7. 接班開場 SOP(本輪 session 不變動)
 
-跟 04-28 一致(主窗口 SOP 沒變),補一條:
+跟 04-28 + 04-29 v1 一致。要做的事:
 
-### 你接班時做的事
-
-1. Project knowledge 自動載入(SYSADMIN_BRIEFING + CLAUDE.md + 本 handoff + README + context),**不需要 Wayne 貼**
-2. 用你自己的話回 Wayne 三件事:
+1. Project knowledge 自動載入(SYSADMIN_BRIEFING + CLAUDE.md + 本 handoff + README + context)
+2. 用你自己的話回 Wayne:
    - 你的角色(sysadmin + 決策諮詢)
-   - repo 現況(最近完成的事、待辦、進行中)
-   - 進行中的脈絡(影片產出主軸、ComfyUI workflow 重建狀態、subagent 待裝)
+   - repo 現況(本輪 #2 workflow 完成 + **6 份待整合 patch 還沒產**)
+   - 進行中脈絡
 3. 等 Wayne 給任務,**不主動建議今天做什麼**
 
-### 接班測試題(本次 session 補一題)
+---
 
-承襲 04-28 的 9 題,本次 session 補一題:
+## 8. 接班測試題(本輪新增 2 題)
 
-**10. Wayne 拍 (A) 路線維持影片優先後,主窗口看到 Wayne 又說「先建系統再產內容」該怎麼回應?**
+承襲 04-28 + 04-29 v1 共 10 題,本輪補 2 題:
 
-(預期答案:**禮貌 raise 三個 Wayne 自己該回答的問題**——第一集是否上傳、「系統建好」定義、是不是其實不想做第二集——不替 Wayne 拍板,讓 Wayne 自己面對這三條。不要直接同意「切換成系統優先」。)
+**11. Wayne 派工跑完 ComfyUI workflow 後,執行端 progress report 的「待辦」段該不該列「Wayne commit + push」當項目?**
+
+預期答案:**不該**。Commit / push 是 Wayne 的決策範疇,不在執行端視野內 — 這是 user-level CLAUDE.md 硬規則 4 跟 SYSADMIN_BRIEFING 主窗口職責第 6 條的核心。執行端「完成」邊界 = 實機執行 + 文件 patch + 驗證 + 寫 report **停**。Commit message / 時機 / 批次全部不在執行端視野。
+
+**12. 派工模板邊界段該怎麼寫 commit 紀律?**
+
+預期答案:**完全不寫**。不寫「Wayne 自己做 commit」、不寫「不擅自 commit」、不寫「commit 後通知」等任何提到 commit / push 的引導語。讓 commit 完全脫離執行端視野。核心紀律已由 user-level CLAUDE.md 硬規則 4 cover,不必在每份派工模板重提。
 
 ---
 
-## 7. Session 結束時 repo 的乾淨指標
+## 9. Session 結束時 repo 的乾淨指標
 
 下一個 session 接班時應該確認以下都成立:
 
-- [ ] `git status` working tree clean
-- [ ] `git log --oneline -10` 顯示本次 session 的 commit 鏈
-- [ ] `SYSADMIN_BRIEFING.md` 教訓段有 5 條(教訓 5 = cp950 ASCII 紀律)
-- [ ] `D:\Work\system-setup\CLAUDE.md` 是 v2.0(file 開頭寫 "Project-level: system-setup",有提到 user-level 拆分)
-- [ ] `C:\Users\Wayne\.claude\CLAUDE.md` 存在(user-level,跨 repo 通用紀律)
-- [ ] `.claude\skills\` 三份 SKILL.md 都在 git ls-files 裡
-- [ ] `.gitignore` 包含 `!.claude/skills/` 例外規則
-- [ ] `progress-reports\` 內**只有** README.md(本次 NIM 任務的 report 已被 Wayne 刪除)
-- [ ] `openwebui\setup.md` 有「擴充:接入 NVIDIA NIM」H2 段 + 踩坑 #4
-- [ ] `ai-models\local-models.md` 雲端 API 表有 deepseek 兩條 + 已駁回段「替代方案」改成「已接入」
+- [ ] `git status` 顯示有「多批未 commit 變更」(預期狀態 — Wayne 未 commit 完所有累積)
+- [ ] `git log --oneline -10` 顯示截至 04-29 v1 的 commit 鏈(本輪 v2 變更**還沒進 commit log**)
+- [ ] `SYSADMIN_BRIEFING.md` 教訓段有 6 條(教訓 6 = grep pattern 完整性)
+- [ ] `SYSADMIN_BRIEFING.md` 主窗口職責段有 6 條(第 6 條 = 派工模板邊界段不寫 commit 引導語)
+- [ ] `D:\Work\system-setup\CLAUDE.md` 是 v2.0(project-level)
+- [ ] `C:\Users\Wayne\.claude\CLAUDE.md` 硬規則 4 標題是「Commit / push 是 Wayne 的決策範疇」(不是「不主動 git commit / push」)
+- [ ] `PROGRESS_TEMPLATE.md` 使用說明 5-6 行寫「由 Wayne 決定何時 commit」
+- [ ] `D:\Models\diffusion\`(不是 `D:\Models\sd\`)存在,內 17 檔 / 59.88 GB / 9 子資料夾
+- [ ] `extra_model_paths.yaml` `base_path` 指向 `D:\Models\diffusion\`
+- [ ] `comfyui-workflows\Flux-fill_OneReward_萬物移除_10步.json` 存在
+- [ ] `D:\Models\diffusion\diffusion_models\flux.1-fill-dev-OneReward-fp8.safetensors` 存在(11.085 GB)
+- [ ] `D:\Models\diffusion\loras\` 含 `Flux-Turbo-Alpha.safetensors` + `removal_timestep_alpha-2-1740.safetensors`
+- [ ] `D:\Models\diffusion\clip\` 含 `clip_l.safetensors` + `t5xxl_fp8_e4m3fn.safetensors`
+- [ ] `D:\Models\diffusion\vae\ae.safetensors` 存在
+- [ ] `progress-reports\` 內**只有** README.md(本輪 4 份 report 已被 Wayne 整合 + 刪除)
 - [ ] Claude Projects 設定:
-  - knowledge 含本 handoff(`SESSION_HANDOFF_2026-04-29.md`)
-  - knowledge **已移除舊的** `SESSION_HANDOFF_2026-04-28.md`(避免兩份混淆)
+  - knowledge 含本 handoff(`SESSION_HANDOFF_2026-04-29.md` v2)
+  - knowledge **已移除舊版** `SESSION_HANDOFF_2026-04-29.md` v1
   - custom instructions 已貼
 
 任一不成立 → 跟 Wayne 釐清。
 
+**特別留意**:第 4 段「待整合 patch 清單」**6 份 MD patch + 教訓 7 候選還沒產**。下次主窗口接班的開場任務(假設 Wayne 拍板要整合)就是處理這 6 份。
+
 ---
 
-## 8. 連結速查
+## 10. 連結速查
 
-主要檔的本地絕對路徑(主窗口派工執行端用本地路徑,不用 raw URL):
+主要檔的本地絕對路徑:
 
 | 檔 | 本地路徑 |
 |---|---|
 | SYSADMIN_BRIEFING | `D:\Work\system-setup\SYSADMIN_BRIEFING.md` |
 | CLAUDE.md (project) | `D:\Work\system-setup\CLAUDE.md` |
 | CLAUDE.md (user) | `C:\Users\Wayne\.claude\CLAUDE.md` |
-| openwebui setup | `D:\Work\system-setup\openwebui\setup.md` |
+| PROGRESS_TEMPLATE | `D:\Work\system-setup\PROGRESS_TEMPLATE.md` |
+| comfyui setup | `D:\Work\system-setup\comfyui\setup.md` |
+| comfyui workflows | `D:\Work\system-setup\comfyui\workflows.md` |
+| comfyui conflicts | `D:\Work\system-setup\comfyui\conflicts.md` |
+| comfyui conflicts-kjnodes | `D:\Work\system-setup\comfyui\conflicts-kjnodes.md` |
+| huggingface tricks | `D:\Work\system-setup\comfyui\huggingface-download-tricks.md` |
 | ai-models local-models | `D:\Work\system-setup\ai-models\local-models.md` |
+| 新 workflow JSON | `D:\Work\system-setup\comfyui-workflows\Flux-fill_OneReward_萬物移除_10步.json` |
 | skills 三份 | `D:\Work\system-setup\.claude\skills\<skill-name>\SKILL.md` |
 
 GitHub raw URL **只在執行端不在 Wayne 機器上**(遠端 web Claude)時才用,本機 Claude Code 一律走絕對路徑(SYSADMIN_BRIEFING 教訓 3)。
 
 ---
 
-**本快照建立日期**:2026-04-29
-**建立背景**:本次 session 完成 LiteLLM NIM deepseek 對接(v4-pro 通、v4-flash 待 NIM 復服)+ SYSADMIN_BRIEFING 教訓 5(cp950)+ CLAUDE.md 拆 user/project + 三個 Skills + Claude Projects 啟用,共 ~8 個 commit。Wayne 路線拍板 (A) 維持影片優先,subagent 暫不裝。Wayne 收工,要交接給下個 session。
+**本快照建立日期**:2026-04-29(v2)
+**蓋掉**:同日 v1
+**v2 更新理由**:本輪 session 在 v1 基礎上完成 4 大批變更(`sd → diffusion` rename / 教訓 6 + HF SOP / commit 紀律改寫 / Workflow #2 重建),v1 沒記;且累積 6 份待整合 patch 主窗口端尚未產出,需要明確 handoff 給下次接班。

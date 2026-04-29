@@ -30,10 +30,10 @@ ComfyUI:
 
 ### 模型統一目錄
 
-ComfyUI 透過 `extra_model_paths.yaml` 讀 `D:\Models\sd\`(避免重複下載):
+ComfyUI 透過 `extra_model_paths.yaml` 讀 `D:\Models\diffusion\`(避免重複下載):
 
 ```
-D:\Models\sd\                # 模型主目錄
+D:\Models\diffusion\                # 模型主目錄
 ├── checkpoints\             # SDXL / FLUX.1 all-in-one 整合模型
 ├── diffusion_models\        # FLUX.2 / Klein 分離 UNET
 ├── clip\                    # text encoders(Qwen3, T5)
@@ -110,7 +110,7 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 
 ## 已下載模型清單
 
-### Checkpoints(`D:\Models\sd\checkpoints\`)
+### Checkpoints(`D:\Models\diffusion\checkpoints\`)
 
 | 檔名 | 大小 | 用途 |
 |---|---|---|
@@ -118,7 +118,7 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `flux1-dev-fp8.safetensors` | 16.06 GB | FLUX.1 Dev all-in-one |
 | `SUPIR-v0Q.ckpt` | 4.96 GB | SUPIR 商業級升頻(custom node 已裝,workflow 未搭) |
 
-### Diffusion Models(`D:\Models\sd\diffusion_models\`)
+### Diffusion Models(`D:\Models\diffusion\diffusion_models\`)
 
 | 檔名 | 大小 | 用途 |
 |---|---|---|
@@ -126,21 +126,21 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `flux-2-klein-9b-fp8.safetensors` | 8.79 GB | Klein 9B distilled(4 步) |
 | `flux-2-klein-base-9b-fp8.safetensors` | ~9 GB | Klein 9B Base(20 步,SOTA) |
 
-### CLIP / Text Encoders(`D:\Models\sd\clip\`)
+### CLIP / Text Encoders(`D:\Models\diffusion\clip\`)
 
 | 檔名 | 大小 | 用途 |
 |---|---|---|
 | `qwen_3_4b_fp4_flux2.safetensors` | 3.85 GB | 給 Klein 4B 用(Qwen3 4B FP4,維度 7680) |
 | `qwen_3_8b_fp8mixed.safetensors` | 8.07 GB | 給 Klein 9B 用(Qwen3 8B FP8 mixed,維度 12288) |
 
-### VAE(`D:\Models\sd\vae\`)
+### VAE(`D:\Models\diffusion\vae\`)
 
 | 檔名 | 大小 | 用途 |
 |---|---|---|
 | `flux2-vae.safetensors` | ? | 給 4B / FLUX.1 用 |
 | `full_encoder_small_decoder.safetensors` | ~250 MB | 給 Klein 9B 用(專用) |
 
-### Upscale(`D:\Models\sd\upscale_models\`)
+### Upscale(`D:\Models\diffusion\upscale_models\`)
 
 | 檔名 | 大小 | 用途 |
 |---|---|---|
