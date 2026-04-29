@@ -83,7 +83,9 @@ http://localhost:11434
 | 4K 大圖出稿 | Klein 4B + UltraSharp 4× | ~5 秒 | 高 | ~7 GB |
 | **最終定稿(SOTA)** | **FLUX.2 Klein 9B Base + Qwen3 8B** | **41 秒** | **頂級** | **~21 GB** |
 | 整合測試 | FLUX.1 Dev fp8 | ~30 秒 | 高 | ~16 GB |
+| **純 pose 生人物** | **FLUX.1 Dev fp16(BFL gated)+ ControlNet Union Pro 2.0 + DWPose** | **78 秒 cold / 26 秒 warm** | **高** | **~23.8 GB 高峰** |
 | **物品移除(inpaint)** | **FLUX.1 Fill OneReward fp8 + Turbo-Alpha + Removal LoRA** | **93.68 秒** | **高** | **~24 GB 高峰** |
+| **保留人物改姿勢** | **Qwen Image Edit 2509 fp8 + Lightning 8steps + consistence_edit_v2 LoRA + Qwen 2.5 VL 7B(fp8 scaled)** | **92.8 秒(首次含載 5 model;同 model warm 預估 30-50 秒)** | **高(視覺判待 Wayne)** | **~23.27 GB 高峰** |
 
 ### 關鍵 Mapping(不可違反)
 
