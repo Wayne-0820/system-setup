@@ -8,7 +8,7 @@
 > 主索引:[`conflicts.md`](./conflicts.md)
 > 風險分級標準見主索引。
 >
-> 最後更新:2026-04-28
+> 最後更新:2026-04-29
 
 ---
 
@@ -76,7 +76,7 @@
 
 | 規劃 workflow | 可能影響的衝突 | 處理 |
 |---|---|---|
-| Flux-fill OneReward 萬物移除 | `ImageAndMaskPreview`(Swwan) | ✅ Swwan 不裝,**安全** |
+| Flux-fill OneReward 萬物移除 ✅(2026-04-29 完成) | `ImageAndMaskPreview`(Swwan)+ `GrowMaskWithBlur`(WAS Mask Fill Holes 替代) | ✅ Swwan 不裝;`GrowMaskWithBlur` 是 #2 workflow 對 KJNodes 的核心依賴(KJNodes 上游若 breaking change 會影響 #2)。詳見 `conflicts.md` 替代節點對照段 |
 | Kontext + ControlNet 姿態改變 | 無 | — |
 | Qwen3 TTS 聲音克隆 / 設計 | `AudioConcatenate` | ⚠️ 裝 audio pack 前回查本檔 + 主索引 |
 | Qwen image 擴圖 | 無 | — |
@@ -91,6 +91,7 @@
 |---|---|---|
 | 2026-04-27 | 安裝 KJNodes v1.3.9 | Flux-fill 萬物移除 workflow 必需節點 `ImageAndMaskPreview` 由此 pack 提供 |
 | 2026-04-27 | Swwan 永不安裝 | KJNodes 是上游正主,Swwan 疑似 fork;57 個節點衝突全部由 KJNodes 接管 |
+| 2026-04-29 | 確認 `GrowMaskWithBlur` 為 WAS `Mask Fill Holes` 等價替代,Workflow #2 採用 | was-node-suite-comfyui 已 archived(2025-06),為單一節點裝整 archived pack 不對等;KJNodes `GrowMaskWithBlur(expand=0, blur_radius=0, fill_holes=True)` 底層用同一個 `scipy.ndimage.binary_fill_holes`,實機跑通 |
 
 ---
 
@@ -102,7 +103,7 @@
 
 ---
 
-**最後更新**:2026-04-28
+**最後更新**:2026-04-29
 
 **同步來源**:
 - ComfyUI Manager v3.39.2 conflicts UI(2026-04-27 取得 61 條原始記錄)

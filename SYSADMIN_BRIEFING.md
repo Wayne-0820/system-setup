@@ -442,6 +442,20 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 **派工模板紀律**:bulk rename 派工的 grep section 預設列上這 3 類 pattern,讓執行端不必自己想完整性。
 
+### 7. Bulk patch 多檔的 line ending 紀律
+
+跨多檔 bulk patch 時,**line ending 不能假設統一**。同一 repo 內檔案可能 LF only(Linux 慣例) / CRLF(Windows 慣例) / 混用,bulk script 寫回時若強制 normalize 成單一格式,**會污染 git diff**(內容沒實質改但整檔顯示變更)。
+
+**SOP**:
+1. 寫前用 `[System.IO.File]::ReadAllText` 讀原檔
+2. 偵測原 line ending:`if ($content.Contains("`r`n")) { CRLF } else { LF }`
+3. 寫回時保留原格式 — PowerShell here-string 預設行為要看版本,5.1 跟 7 行為不同
+4. 寫完用 `[System.IO.File]::ReadAllBytes` 抽樣前 200 byte,確認 line ending 沒被改
+
+**實證**:2026-04-29 commit 紀律 patch 任務 CC 踩到「`user-level CLAUDE.md` 跟 `SYSADMIN_BRIEFING.md` 是 LF only,`PROGRESS_TEMPLATE.md` 是 CRLF」,解法是「patch helper 偵測 `Contains("`r`n")` 後寫回時保留原 line ending」。
+
+**派工紀律**:bulk patch 派工模板的「寫檔 SOP」段該明列「line ending 偵測 + 保留」這條,跟 BOM 驗證並列。
+
 ---
 
 ## 文件導航

@@ -125,6 +125,7 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `flux-2-klein-4b-nvfp4.safetensors` | 2.29 GB | Klein 4B 快速草稿(4 步) |
 | `flux-2-klein-9b-fp8.safetensors` | 8.79 GB | Klein 9B distilled(4 步) |
 | `flux-2-klein-base-9b-fp8.safetensors` | ~9 GB | Klein 9B Base(20 步,SOTA) |
+| `flux.1-fill-dev-OneReward-fp8.safetensors` | 11.085 GB | FLUX.1 Fill OneReward fp8(萬物移除主模型,Workflow #2) |
 
 ### CLIP / Text Encoders(`D:\Models\diffusion\clip\`)
 
@@ -132,6 +133,8 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 |---|---|---|
 | `qwen_3_4b_fp4_flux2.safetensors` | 3.85 GB | 給 Klein 4B 用(Qwen3 4B FP4,維度 7680) |
 | `qwen_3_8b_fp8mixed.safetensors` | 8.07 GB | 給 Klein 9B 用(Qwen3 8B FP8 mixed,維度 12288) |
+| `clip_l.safetensors` | 0.229 GB | FLUX 配套 CLIP-L(Workflow #2 / 未來 FLUX 系列共用) |
+| `t5xxl_fp8_e4m3fn.safetensors` | 4.558 GB | FLUX 配套 T5-XXL fp8(Workflow #2 / 未來 FLUX 系列共用) |
 
 ### VAE(`D:\Models\diffusion\vae\`)
 
@@ -139,6 +142,14 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 |---|---|---|
 | `flux2-vae.safetensors` | ? | 給 4B / FLUX.1 用 |
 | `full_encoder_small_decoder.safetensors` | ~250 MB | 給 Klein 9B 用(專用) |
+| `ae.safetensors` | 0.312 GB | FLUX 配套 ae VAE(Workflow #2,源自 Comfy-Org/z_image_turbo split_files/vae/) |
+
+### LoRA(`D:\Models\diffusion\loras\`)
+
+| 檔名 | 大小 | 用途 |
+|---|---|---|
+| `Flux-Turbo-Alpha.safetensors` | 0.646 GB | alimama 8-step distilled LoRA(加速,Workflow #2) |
+| `removal_timestep_alpha-2-1740.safetensors` | 0.086 GB | lrzjason ObjectRemovalFluxFill v2(物品移除,Workflow #2) |
 
 ### Upscale(`D:\Models\diffusion\upscale_models\`)
 

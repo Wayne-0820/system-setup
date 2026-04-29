@@ -2,7 +2,7 @@
 
 > 這份文件反映**實際運行**的模型分工(不是探索清單)。
 >
-> 最後同步:2026-04-28
+> 最後同步:2026-04-29
 >
 > 三大本地推理工具:**Ollama**(LLM)、**ComfyUI**(影像生成)、**ComfyUI 內 LLM 節點**(JoyCaption 圖像理解)。
 
@@ -83,6 +83,7 @@ http://localhost:11434
 | 4K 大圖出稿 | Klein 4B + UltraSharp 4× | ~5 秒 | 高 | ~7 GB |
 | **最終定稿(SOTA)** | **FLUX.2 Klein 9B Base + Qwen3 8B** | **41 秒** | **頂級** | **~21 GB** |
 | 整合測試 | FLUX.1 Dev fp8 | ~30 秒 | 高 | ~16 GB |
+| **物品移除(inpaint)** | **FLUX.1 Fill OneReward fp8 + Turbo-Alpha + Removal LoRA** | **93.68 秒** | **高** | **~24 GB 高峰** |
 
 ### 關鍵 Mapping(不可違反)
 
@@ -286,4 +287,4 @@ v4-flash 復服後直接重打 `/v1/chat/completions` 即可,無需改 config。
 
 ---
 
-**最後更新**:2026-04-28
+**最後更新**:2026-04-29
