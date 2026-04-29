@@ -329,9 +329,9 @@ Wayne 一開始想 Private,但討論後發現:
 
 跨多次接班累積的 sysadmin 操作規則,寫在這避免重蹈。
 
-本段條目混雜「規則」(該怎麼做的 SOP)+「踩坑紀錄」(踩過什麼 + 對應規則)。既有 1-7 條編號不動,新加條目以「規則」為主,踩坑紀錄獨立寫在規則內或子段。
+本段條目混雜「規則」(該怎麼做的 SOP)+「踩坑紀錄」(踩過什麼 + 對應規則)。
 
-### 1. 接班時主動 audit repo 結構合理性
+### 規則 1. 接班時主動 audit repo 結構合理性
 
 **不要只接受現狀**。新主窗口接班時,Wayne 的 briefing 會說「整套架構都規劃好了」,但這不代表 repo 結構真的反映規劃精神。
 
@@ -344,7 +344,7 @@ Wayne 一開始想 Private,但討論後發現:
 
 抓到不一致就 raise 出來,讓 Wayne 拍板要不要動,**而不是繼續往不一致的方向加東西**。
 
-### 2. PowerShell 5.1 BOM 災難 — bulk script 必須用 .NET API 寫檔
+### 規則 2. PowerShell 5.1 BOM 災難 — bulk script 必須用 .NET API 寫檔
 
 **症狀**:PowerShell 5.1 的 `Set-Content -Encoding UTF8` / `Out-File -Encoding utf8` **強制加 UTF-8 BOM**(`EF BB BF`),即使原檔無 BOM。PowerShell 7+ 才修掉這個行為。
 
@@ -363,7 +363,7 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding $false
 
 repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,5.1 一律改用 .NET API。
 
-### 3. 派工 reference 路徑要分執行端類型,不要混
+### 規則 3. 派工 reference 路徑要分執行端類型,不要混
 
 派工模板給執行窗口讀「前置必讀文件」時,**reference 的寫法依執行端在不在 Wayne 本機而不同**,主窗口要先想清楚再產模板。
 
@@ -384,7 +384,7 @@ repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,
 
 派工前先問自己:**執行端在 Wayne 機器上嗎?** 在 → 本地絕對路徑;不在 → raw URL + 控量。
 
-### 4. Progress report 落地路徑(本地執行端)
+### 規則 4. Progress report 落地路徑(本地執行端)
 
 本地執行端(Claude Code)跑完任務,progress report 寫到:
 
@@ -407,9 +407,9 @@ repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,
 
 **遠端執行端(web Claude)不適用**:web Claude 沒檔案落地,progress report 直接貼對話框。本條規則只給本地執行端。
 
-### 5. Windows + 繁中系統:第三方工具讀 config 檔的 ASCII 紀律
+### 規則 5. Windows + 繁中系統:第三方工具讀 config 檔的 ASCII 紀律
 
-教訓 2 是**寫檔**端的 BOM 問題(自家 PowerShell 行為),這條是**讀檔**端的編碼問題(第三方工具行為)。
+規則 2 是**寫檔**端的 BOM 問題(自家 PowerShell 行為),這條是**讀檔**端的編碼問題(第三方工具行為)。
 
 **現象**:Wayne 機器是 Windows 11 + 繁中系統,Python `locale.getpreferredencoding()` 回 `cp950`。任何第三方 Python 工具用 `open(file)` / `yaml.safe_load(file)` 而**不顯式帶 `encoding='utf-8'`**,讀到的 byte 就會走 cp950 解碼。**寫檔是無 BOM UTF-8 也救不了**,因為問題在讀檔端。
 
@@ -430,7 +430,7 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 升 Python 工具版本可能解(新版可能補 `encoding=`),但版本鎖定理由不變。**ASCII config 是最穩的下限**。
 
-### 6. Bulk rename 派工的 grep pattern 完整性紀律
+### 規則 6. Bulk rename 派工的 grep pattern 完整性紀律
 
 派「目錄 / 檔名 rename + 全 repo 同步」任務時,grep pattern 必須涵蓋三類:
 
@@ -444,7 +444,7 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 **派工模板紀律**:bulk rename 派工的 grep section 預設列上這 3 類 pattern,讓執行端不必自己想完整性。
 
-### 7. Bulk patch 多檔的 line ending 紀律
+### 規則 7. Bulk patch 多檔的 line ending 紀律
 
 跨多檔 bulk patch 時,**line ending 不能假設統一**。同一 repo 內檔案可能 LF only(Linux 慣例) / CRLF(Windows 慣例) / 混用,bulk script 寫回時若強制 normalize 成單一格式,**會污染 git diff**(內容沒實質改但整檔顯示變更)。
 
@@ -458,121 +458,37 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 **派工紀律**:bulk patch 派工模板的「寫檔 SOP」段該明列「line ending 偵測 + 保留」這條,跟 BOM 驗證並列。
 
-### 規則 8. 派工模板 v1 系統性自相矛盾的 cross-verify 紀律
+### 規則 8. 派工模板交叉驗證(C 改架構後弱化)
 
-主窗口寫派工模板**前**要交叉驗證**五條一致**:
+精準派工(指定 node level 改動)前,主視窗需 cross-verify 機器真相五條:widgets_values / mode / link / KSampler 路徑 / 工具實機介面。**派工指檔位置(§N / 第 N 條 / Y 段尾)前先 grep verify**,不靠記憶。
 
-1. **widgets_values**:派工列的 model 檔名 / patch 後值,跟實機 `/object_info` dropdown options 對齊(尤其 path separator forward vs backslash)
-2. **mode**:派工目標若提到「啟用某 LoRA / 某客製節點」,要 verify JSON 該 node 的 `mode` 值(0=enable / 4=bypass)是否符合目標
-3. **link**:派工 KSampler / 主流節點的 conditioning / model / latent input 接的是哪個 source node — 不能假設「workflow 標的描述」就是「實機 link 接到的」
-4. **KSampler 路徑一致**:KSampler 預設 `steps / cfg / sampler / scheduler` 是否跟派工目標(8 步 / 4 步 / 標準 20 步)一致
-5. **引用工具的實機介面**:派工字面引用的 CLI flag / 命令格式,要對工具當前實機 source code verify(不是憑記憶或假設)
+**C 改架構後弱化**:目標型派工(`ASSIGNMENT_TEMPLATE.md`)讓執行端自己讀實機檔規劃,主視窗不再寫精準 patch 表。本規則僅適用主視窗仍寫精準派工的場景(例:緊急一次性 patch、主視窗有完整實機脈絡時)。
 
-**實證**:2026-04-29 Workflow #3a-v2 派工模板 v1 踩到全部五條:
-- (1) `text_encoders/` 路徑 yaml 沒映射,`clip:` 才對 → 第 6 個 bug,執行端 mv 修
-- (2) JSON node 4 / 34 / 44 預設 mode=4(bypass),派工目標說「啟用」但沒 patch mode → 主窗口拍 C unbypass
-- (3) KSampler positive ← link 104 = node 45 內建 TextEncodeQwenImageEditPlus,**非** node 44 lrzjason — 派工以為「裝 lrzjason pack 就會走 lrzjason」事實上 KSampler 連的是內建
-- (4) JSON KSampler steps=20,跟派工「Lightning 8 步」目標不一致
-- (5) `tools/workflow_submit.py --validate-only` 不存在(實機是 positional argument,只有 `--label`),且 dry-run 紀律本身在邏輯上抓不到要抓的(server validation 只在 POST 時跑)
+實證踩坑:2026-04-29 #3a-v2 派工 v1 五項全踩(text_encoders 路徑 / mode=4 bypass / KSampler 連 node 45 內建非 lrzjason / steps=20 / `--validate-only` flag 不存在),5 個 STOP 上報後訂正。同輪主視窗指控「handoff bug」,grep 後 0 處錯誤路徑 — 錯誤只在派工自身。
 
-**5 項 bug 同根**:主窗口寫派工時沒對機器真相 cross-verify。執行端讀派工後**先 STOP 上報**(攤平五條 verify 結果),主窗口拍板修正 → 才進 Step 1。本輪因為主窗口寫派工時手上沒最新 handoff(v3 過期版),五條全踩。
-
-**派工模板紀律**:寫派工**前**主窗口要 grep / read 既有 handoff + setup.md + 工具 source code,不憑記憶寫。
-
-**擴充:派工指檔位置前 grep verify**
-
-派工內容含「動 X 檔 Y 段」這類具體位置時,主視窗派工前自己 grep verify(讓 Wayne 貼檔內容、執行端 grep 回報、或 GitHub raw URL 查) — 不要靠記憶。記憶錯誤的成本是執行端 STOP 上報一輪 + 主視窗訂正一輪,比 grep 一次貴。
-
-適用觸發:派工裡出現「§N」/「第 N 條」/「X 段」/「Y 段尾」這類位置指示。
-
-### 規則 9. 主窗口攤選項時自動推單一答案的引導效應
-
-執行端 STOP 上報攤多選項時,常常順勢給「我的判斷」(C 方案 + 子問題 a / b / c),主窗口看完容易順著推薦走拍板,等於執行端**間接決策**。
-
-**現象**:
-- 執行端在 STOP 攤平 A/B/C 後加「我的建議:選 C 因為...」 → 主窗口看完直接拍 C
-- 子問題類似:執行端寫「我推 a / 弱推 b / 不推 c」 → 主窗口看到「弱推」就跟著選
-- 結果:**主窗口的決策角色被執行端的隱性引導稀釋**,Wayne 失去獨立拍板的判斷空間
-
-**紀律(雙端各自負責)**:
-
-執行端紀律:
-- STOP 上報攤選項時**刻意不推或弱推**單一答案
-- 給「中性事實 + 各選項利弊」,**不寫「我的建議」**
-- 真的有強烈傾向時用「弱推薦」標記,但說明「弱推因為 X,但若 Y 則該選 Z」(讓主窗口看完整體)
-
-主窗口紀律:
-- 看到執行端推單一答案時**強迫自己看完所有選項**才拍板
-- 對「我推 X」這種 phrasing 警覺,問自己「若沒這個推薦,我會怎麼拍?」
-- 必要時要求執行端把「我的建議」段刪掉,只看事實 + 利弊
-
-**實證**:2026-04-29 Workflow #3a-v2 派工執行端 STOP 上報 4 項 bug 時推 C(unbypass + 不動 link),主窗口拍 C — 但執行端沒寫推薦時 Wayne 拍 a(替代節點)沒被引導,事後 retrospective 發現 a 確實是更乾淨的選(comfy-core 內建,無依賴)。對比 C 推薦的事件,主窗口拍板時的「獨立判斷」空間是被引導稀釋還是有自主?難以事後檢驗 — 但風險清楚。
-
-**接班測試題 16(handoff v5 §9 新增)**對應這條紀律的具體案例:主窗口指控「handoff bug」前先 grep verify。
-
-### 規則 10. 主視窗 vs 執行端 — 職責切割與外網查詢分工
-
-主視窗對話容易忘記自己「sysadmin + 決策諮詢」的定位,跑去做執行端的工作(讀大型 JSON、grep 機器、跑 verify);執行端也容易越界,跳過機器真相直接上網查文件「猜」答案。本輪累積教訓:
-
-#### 切割原則
+### 規則 9. 主視窗 vs 執行端 — 職責切割
 
 | 層級 | 主視窗 | 執行端(Claude Code)|
 |---|---|---|
 | **機器真相** | 不直接讀大型檔(JSON / source / 大 log)| grep / 讀檔 / 跑 verify / 安裝 / 下載 / patch / 煙測 |
-| **外網查詢** | **輔助參考**:web_search / web_fetch 抓社群慣例 / 官方 docs / PR / issue,當決策判斷依據 | **任務執行**:Context7 抓 library / API / source docs(任務驅動需要時)|
-| **決策** | 拍板 / 寫派工 / 整合 progress report / 累積教訓 | STOP 上報 + 攤選項(刻意不推或弱推,見教訓 9)|
+| **外網查詢** | 輔助參考(web_search / web_fetch),為決策抓判斷依據 | 任務執行(Context7 抓 library / API docs),為任務抓 docs |
+| **決策** | 拍板 / 寫派工 / 整合 progress report / 累積規則 | STOP 上報 + 攤選項(刻意不推或弱推單一答案,避免引導主視窗)|
 
-兩端都能上網,**差別在目的不在權限**:主視窗外網 = 為決策抓判斷依據;執行端外網 = 為任務抓 docs。
+兩端都能上網,**差別在目的不在權限**。
 
-#### STOP 上報附外網查詢題目清單
+#### STOP 上報附主視窗查詢清單
 
-執行端 STOP 上報攤選項時,**附「主視窗需要的外網查詢題目」清單**(若有)。例:
+執行端 STOP 上報攤選項時,**附「主視窗需要的外網查詢題目」清單**(若有),讓主視窗外網查詢有方向。例:
 
 > 候選 a/b/c verify 完,需要主視窗查:
-> 1. KJNodes `StringConstantMultiline` 跟 was-node-suite `Text Multiline` 在社群 workflow 是否常見替代?
+> 1. KJNodes `StringConstantMultiline` 在社群 workflow 是否常見替代?
 > 2. comfy-core 有沒有 PR / issue 在做 native multiline node?
 
-主視窗接到後跑 web_search / web_fetch,回拍板理由帶外部證據,不靠 baseline 直覺。
+#### 引導效應紀律
 
-#### Context7 採用 A 模式(純 MCP + 手動觸發)
+執行端在 STOP 給「我的建議」會稀釋主視窗獨立判斷空間。執行端 STOP 上報攤多選項時**刻意不推或弱推**,給「中性事實 + 各選項利弊」,不寫「我的建議」段。主視窗看到推單一答案時強迫自己看完所有選項才拍板。
 
-Context7(Upstash)是 MCP server,給 Claude Code 即時抓 library / framework / API docs。三種裝法:
-
-- **A. 純 MCP server + 不寫 CLAUDE.md auto-rule**:預設**不會自動觸發**。要用就在 prompt 寫 `use context7`,執行端才會 fire `resolve-library-id` + `query-docs` 抓 docs
-- **B. 純 MCP server + CLAUDE.md 加 auto-rule**:Claude Code 看到 library / framework 提及就自動 fire,不問人
-- **C. 裝 plugin(`upstash/context7-plugin`)**:含 skill(自動偵測場景)+ docs-researcher sub-agent,skill trigger pattern matching 自動 fire
-
-**選 A**。理由三條:
-
-1. **跟派工架構一致**:派工模板明確列每個 step,需要 docs 的步驟在派工裡寫「prompt 帶 `use context7`」,執行端在那個 step fire,其他 step 不會自動上網。可控、可審查、可在 progress report 追蹤
-2. **避免 Claude 自作主張**:B/C 自動觸發會讓執行端決定何時走網路;Wayne 紀律要求執行端不自作主張,A 比較貼
-3. **token 成本可控**:Context7 抓的 docs 會塞進 context;手動觸發 = Wayne 決定何時花這個 token 配額
-
-裝法(本地 stdio,免 API key):claude mcp add context7 -- npx -y @upstash/context7-mcp@latest 需要 Node.js 18+。免費版有 rate limit,個人用通常夠;高頻才申請 free key。
-
-#### 派工模板帶 `use context7` 的 step 範例
-
-派工裡需要 docs 的步驟明確寫出來。例(ComfyUI 節點 verify 場景):
-
-> **Step X.Y — Verify Comfyui-QwenEditUtils 節點行為**
->
-> 1. 讀本機 source:`D:\Work\ComfyUI_portable\ComfyUI_windows_portable\ComfyUI\custom_nodes\Comfyui-QwenEditUtils\`
->    - grep `class TextEncodeQwenImageEditPlus_lrzjason` 找節點 class
->    - 看 `INPUT_TYPES` / `RETURN_TYPES` / 主要 method
-> 2. 補充對照官方 docs:prompt 帶 `use context7 with /lrzjason/Comfyui-QwenEditUtils 抓最新 README`
-> 3. 交叉驗證:本機 source 行為 vs 官方 README 描述,任一不一致 STOP 上報
-
-執行端跑 Step 1 拿機器真相,Step 2 抓外部 docs,Step 3 交叉驗證。本機 source(機器真相)+ Context7(外部 docs)兩個資訊源比單純讀 source 強。
-
-#### 適用範圍
-
-本輪 #3a-v2 沒裝 Context7(中途不改執行端工具集),**從下次新派工開始**派工模板可以帶 `use context7` step。Context7 安裝動作本身請主視窗在新對話開始前指派,不要塞進進行中的派工。
-
-### 規則 11. Commit / push 流程
-
-主視窗到 commit 點主動催 Wayne(progress report 落地、規則段更新完、跨檔大改告一段落這類時機)+ 草擬 commit message 拆批,Wayne 拍板拆批方式後,Claude Code 執行 `git add` / `git commit -m "..."` / `git push`。Wayne 不親自打 git 指令。push 前執行端 grep `git status` 驗證 staged 對齊派工拆批,不對 STOP 上報。
-
-紀律源頭在 user-level CLAUDE.md 硬規則 4。
+(Context7 安裝 + 派工模板帶 `use context7` 用法搬到 `D:\Work\system-setup\CLAUDE.md`。)
 
 ---
 

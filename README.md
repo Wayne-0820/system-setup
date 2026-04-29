@@ -57,6 +57,7 @@ https://raw.githubusercontent.com/Wayne-0820/system-setup/main/START_HERE.md
 | `START_HERE.md` | 執行窗口 onboarding | 新執行窗口讀 |
 | `context.md` | 硬體 / 使用情境 / D 槽完整結構 | 主規劃窗口必讀 |
 | `decisions.md` | 已拍板的決策 + winget 安裝清單 | 重灌時逐項對照 |
+| `ASSIGNMENT_TEMPLATE.md` | 派工模板範本(目標型派工) | 主視窗產派工時用 |
 | `PROGRESS_TEMPLATE.md` | 進度報告範本 | 任務結束時用 |
 
 ### 🎨 ComfyUI / 影像生成
