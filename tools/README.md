@@ -2,7 +2,7 @@
 
 放 repo 下的 Python 小工具,處理「不該寫進主流程、但跨對話會重複用到」的雜事。
 
-> 最後同步:2026-04-27
+> 最後同步:2026-04-29
 
 ---
 
@@ -11,6 +11,7 @@
 | 腳本 | 用途 | 依賴 |
 |---|---|---|
 | `png_to_ico.py` | PNG → 多尺寸 ICO,內建亮度閾值去背 | Pillow(ComfyUI portable 內建,免裝) |
+| `workflow_submit.py` 🧪 | ComfyUI frontend workflow JSON → API 格式 + POST `/prompt` | stdlib(ComfyUI portable Python 也行) |
 
 ---
 
@@ -47,6 +48,61 @@ PNG → 多尺寸 ICO 轉換,內建亮度閾值去背演算法。專門用於把
 ### 輸出尺寸
 
 7 種:**16 / 24 / 32 / 48 / 64 / 128 / 256**。Windows 在不同 UI 場景會自動挑合適尺寸。
+
+---
+
+## workflow_submit.py
+
+**狀態**:🧪 實驗性(目前驗證 Workflow #3b,#3a 嘗試已 deprecated)
+
+### 用途
+
+ComfyUI workflow JSON 有兩種格式:**frontend**(GUI 用,有 nodes/links/widgets_values/座標)+ **API**(`/prompt` 用,以 node id 為 key、inputs 是 dict)。
+本工具將 frontend JSON 轉成 API 格式並 POST 到 ComfyUI HTTP `/prompt`,**避開 GUI 載入時的 widget 嚴格校驗 + LoadImage dropdown cache 兩個雷**(詳見 `comfyui/setup.md` 重要踩坑 SOP §11)。
+
+### 依賴
+
+純 stdlib(`json` / `urllib.request` / `argparse` / `uuid` / `time`)。系統 Python 或 ComfyUI `python_embeded` 都可跑。ComfyUI 必須在 8188 listen。
+
+### 呼叫範例
+
+```powershell
+& "D:\Work\ComfyUI_portable\ComfyUI_windows_portable\python_embeded\python.exe" `
+  "D:\Work\system-setup\tools\workflow_submit.py" `
+  "D:\Work\system-setup\comfyui-workflows\<some_workflow>.json" `
+  --label "smoke_test"
+```
+
+### 參數
+
+| 參數 | 用途 |
+|---|---|
+| `<workflow_json_path>` | frontend workflow JSON 絕對路徑(必填,positional) |
+| `--label` | 印 log 用的標籤,任意字串(選填,預設空) |
+
+### 行為
+
+1. POST `/prompt` 拿 `prompt_id`
+2. 每 2 秒 poll `/queue` + `/history` 直到完成
+3. 印出 `status` + `outputs`(SaveImage 寫入的檔名清單)
+
+### 已知 hidden widget 處理
+
+ComfyUI 有些 node 在 widgets_values 多塞 frontend-only 資訊(node 不註冊但 GUI 顯示):
+
+- KSampler / KSamplerAdvanced: `control_after_generate` 在 `seed` / `noise_seed` 之後
+- LoadImage: `image` upload-mode marker 在 `image` 之後
+
+當前 hardcoded 在 `HIDDEN_AFTER` set,未來踩到新 hidden widget 要 patch。
+
+### Caveat
+
+- 其他 workflow 若有不同 hidden widget,可能轉錯(目前只驗證 Workflow #3b)
+- 觸發升級條件:Workflow #4 以後煙測踩到新 hidden widget → 派工 generalize + 補測試
+
+### 檔名變動史
+
+- 2026-04-29:從 `D:\tmp\submit_smoke.py`(階段 1 staging)升至 tools/(原樣 copy + docstring 路徑/檔名 update,沒 generalize logic)
 
 ---
 
@@ -117,4 +173,4 @@ ComfyUI portable 的 `python_embeded` 已經有:
 
 ---
 
-**最後更新**:2026-04-27
+**最後更新**:2026-04-29
