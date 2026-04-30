@@ -126,6 +126,7 @@
 | 2026-04-30 | 透過 `cm-cli install` 而非 Manager web UI | 執行端自動化派工流程(per `conflicts-controlnet-aux.md` 同 SOP);走 HTTP `/object_info` 結構性比對替代 conflicts UI |
 | 2026-04-30 | opencv 衝突補修走 `--force-reinstall opencv-contrib-python` | WanVideoWrapper `requirements.txt` 含 `opencv-python` → Manager prestartup 自動 install → 跟 `opencv-contrib-python` 衝突(教訓 #8 場景再現)。第一次補修只 `pip uninstall opencv-python` **不夠**:cv2 module 共用檔案被破壞,LayerStyle `cv2.ximgproc.guidedFilter` import fail。**正確補修**:`pip install --force-reinstall --no-deps opencv-contrib-python==4.13.0.92`,把 cv2 整套檔案完整放回 |
 | 2026-04-30 | 不裝 `onnx`(放棄 FantasyPortrait sub-pack) | 派工沒要求 FantasyPortrait,WanVideoWrapper 設計就是 optional,核心 Wan 2.2 T2V/I2V 不受影響;要用再裝 |
+| 2026-04-30 | 不採用 torch.compile inductor + sageattn 組合 | 實證:run #1 21.1 min / run #2 cache reuse 20.4 min,沒贏 sageattn baseline。inductor codegen 在當前 fp8_e4m3fn_scaled + Blackwell sm_120 環境蓋掉 sageattn fused kernel 優化。改用 Lightx2v 4-step LoRA 路線(12.91 min)|
 
 ---
 

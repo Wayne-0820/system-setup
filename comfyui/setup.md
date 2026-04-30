@@ -2,7 +2,7 @@
 
 > **這份文件反映實際運行狀態**(不是規劃)。
 >
-> 最後同步:2026-04-29
+> 最後同步:2026-04-30
 >
 > ComfyUI 是這台機器的主要生成工具,配 SageAttention 3 跑 SDXL / FLUX.1 / FLUX.2 Klein 系列。
 
@@ -40,6 +40,7 @@ D:\Models\diffusion\                # 模型主目錄
 ├── clip_vision\             # image encoders
 ├── vae\
 ├── loras\
+│   └── wan22-lightning\        # Wan 2.2 Lightx2v 4-step Lightning LoRA(子目錄隔離)
 ├── controlnet\
 ├── upscale_models\
 └── embeddings\
@@ -163,6 +164,10 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `removal_timestep_alpha-2-1740.safetensors` | 0.086 GB | lrzjason ObjectRemovalFluxFill v2(物品移除,Workflow #2) |
 | `qwen-image\Qwen-Image-Lightning-8steps-V1.1-bf16.safetensors` | 0.791 GB | lightx2v Qwen Image Lightning 8 步加速 LoRA(子目錄 `loras\qwen-image\`,Workflow #3a-v2 用,推 sampler=euler / scheduler=simple / cfg=1.0)|
 | `consistence_edit_v2.safetensors` | 0.571 GB | lrzjason Qwen Edit「保留人物」核心 LoRA(strength=0.4,Workflow #3a-v2 用;HF mirror `hoveyc/comfyui-models`,SHA256 跟 CivitAI 主來源一致)|
+| `wan22-lightning\Wan22_A14B_T2V_HIGH_Lightning_4steps_lora_250928_rank128_fp16.safetensors` | 1.227 GB | Wan 2.2 T2V 4-step Lightning LoRA HIGH(2025-09-28 新版,asymmetric rank128,Workflow #3c 用,cfg=1.0)|
+| `wan22-lightning\Wan22_A14B_T2V_LOW_Lightning_4steps_lora_250928_rank64_fp16.safetensors` | 0.614 GB | Wan 2.2 T2V 4-step Lightning LoRA LOW(rank64,2025-09-28 新版)|
+| `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors` | 0.614 GB | Wan 2.2 I2V 4-step Lightning LoRA HIGH(rank64,Kijai/old 版本,HF 未釋出 I2V 新版,從 `LoRAs/Wan22-Lightning/old/` 下載)|
+| `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors` | 0.614 GB | Wan 2.2 I2V 4-step Lightning LoRA LOW(rank64,/old/ 版本)|
 
 ### ControlNet(`D:\Models\diffusion\controlnet\`)
 
@@ -534,6 +539,32 @@ Start-Process -WorkingDirectory "D:\Work\ComfyUI_portable\ComfyUI_windows_portab
 
 **自動化路線**:GUI 互動以外,可用 `tools/workflow_submit.py` POST `/prompt`(跳過 GUI widget reset / dropdown cache 兩個 GUI 雷,但**path separator 雷仍要先解**)。詳 [`../tools/README.md`](../tools/README.md)。
 
+### 12. Wan 2.2 14B + sageattn fp8 + torch.compile inductor 反而拖慢(2026-04-30)
+
+**症狀**:加 `WanVideoTorchCompileSettings (backend=inductor, mode=default, compile_transformer_blocks_only=True)`,每 step 從 sageattn baseline ~2 分鐘變 ~5 分鐘。run #1 21.1 分鐘 / run #2 process 內 cache reuse 20.4 分鐘,只差 44 秒。
+
+**原因**:推測 inductor default mode codegen 出來的 kernel 比 sageattn 既有 fused attention kernel 慢;`compile_transformer_blocks_only=True` 把每個 transformer block 重 lower 蓋掉 sageattn 優化。也可能是 fp8_e4m3fn_scaled + Compute Capability 12.0 (Blackwell) 還沒被 inductor 完整支援。
+
+**解法**:**不要加 torch.compile**。純 sageattn + Lightx2v 4-step LoRA 已達 12.91 分鐘 / 4 步。
+
+**未來注意**:要再試 torch.compile 的話先試 `mode=max-autotune` / `mode=reduce-overhead`,或關 `compile_transformer_blocks_only` 改 full graph compile。但當前 baseline 不靠 torch.compile 就達標,沒急迫性。
+
+### 13. ComfyUI prompt graph + seed 全相同會 cache execution(2026-04-30)
+
+**症狀**:第二次提交完全一樣的 prompt + 同 seed,0.37 秒就 `execution_success`,所有節點 `execution_cached`,sampler 沒實際跑。
+
+**原因**:ComfyUI 執行端 cache 比對 prompt graph 雜湊 + seed,完全相同就直接回上次輸出。
+
+**解法**:煙測腳本支援 `--seed` 參數,每次跑改 seed 強制重執行。
+
+### 14. Bash run_in_background 子進程 cwd 漂到 C 槽,`/tmp` 解析錯誤(2026-04-30)
+
+**症狀**:`run_in_background` 跑 Python 寫死 `/tmp/foo.json` → `FileNotFoundError: 'C:/Users/Wayne/AppData/Local/Temp/foo.json'`,但檔案實際在 `D:/tmp/`。
+
+**原因**:Python on Windows 把 `/tmp/...` 解析成「當前 drive 的 \tmp\」。Bash tool 互動模式 cwd 在 D:,但 `run_in_background` 子進程 cwd 改到 C: → `/tmp` 變 `C:\tmp\`(不存在)。
+
+**解法**:Bash run_in_background 跑的 Python script,檔案路徑用絕對 `D:/...`,不用 `/tmp/` 或相對路徑。
+
 ---
 
 ## 下一階段規劃
@@ -549,6 +580,7 @@ Start-Process -WorkingDirectory "D:\Work\ComfyUI_portable\ComfyUI_windows_portab
 | ~~3a~~ | ~~Kontext + ControlNet 改姿態(保留人物)~~ | ~~24~~ | ❌ **Deprecated** — Kontext ReferenceLatent 結構性壓 ControlNet,實證不適合此任務(2026-04-29) |
 | 3a-v2 | Qwen Edit 2509 改姿態保留人物 | TBD | Qwen image-edit + consistence LoRA(規劃中) |
 | 3b | FLUX + ControlNet 純 pose 生人物 ✅ | 20 | FLUX.1 Dev + Pro 2.0 + DWPose(2026-04-29 完成,作為 #3a 副產品) |
+| 3c | Wan 2.2 T2V/I2V 720P 81幀 4步 ✅ | TBD | Wan 2.2 A14B + Lightx2v 4-step LoRA(2026-04-30 完成,T2V 煙測 12.91 min)|
 | 4 | Qwen3 TTS 聲音克隆 | 7 | Qwen3 TTS 1.7B + Whisper Large v3 |
 | 5 | Qwen image 擴圖 | 28 | Qwen Image + Inpainting |
 | 6 | 智能多角度生成 | 21 | Qwen-Image-Edit 2511 + 多角度 LoRA |

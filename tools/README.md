@@ -2,7 +2,7 @@
 
 放 repo 下的 Python 小工具,處理「不該寫進主流程、但跨對話會重複用到」的雜事。
 
-> 最後同步:2026-04-29
+> 最後同步:2026-04-30
 
 ---
 
@@ -12,6 +12,7 @@
 |---|---|---|
 | `png_to_ico.py` | PNG → 多尺寸 ICO,內建亮度閾值去背 | Pillow(ComfyUI portable 內建,免裝) |
 | `workflow_submit.py` 🧪 | ComfyUI frontend workflow JSON → API 格式 + POST `/prompt` | stdlib(ComfyUI portable Python 也行) |
+| `build_wan22_workflow.py` | 產出 Wan 2.2 A14B T2V/I2V 合一 workflow JSON(720P 81幀 4 步 Lightx2v 版本)。輸出到 `comfyui-workflows\Wan2.2_A14B_T2V-I2V合一_720P_81幀_4步.json` | stdlib |
 
 ---
 
@@ -173,4 +174,4 @@ ComfyUI portable 的 `python_embeded` 已經有:
 
 ---
 
-**最後更新**:2026-04-29
+**最後更新**:2026-04-30
