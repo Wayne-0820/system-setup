@@ -137,12 +137,15 @@ jqlang.jq
 7zip.7zip
 Notepad++.Notepad++
 VideoLAN.VLC
+Gyan.FFmpeg
 Adobe.Acrobat.Reader.64-bit
 Discord.Discord
 Line.Line
 TeamViewer.TeamViewer
 Valve.Steam
 ```
+
+> `Gyan.FFmpeg`(影片任務基線工具,提供 `ffmpeg` / `ffprobe`,2026-04-30 補裝;詳 `comfyui/setup.md` 踩坑 #17)
 
 ### 本地模型
 
@@ -183,4 +186,4 @@ npm i -g @anthropic-ai/claude-code
 
 ---
 
-**最後更新**:2026-04-27
+**最後更新**:2026-04-30

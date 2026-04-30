@@ -490,6 +490,12 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 (Context7 安裝 + 派工模板帶 `use context7` 用法搬到 `D:\Work\system-setup\CLAUDE.md`。)
 
+### 規則 10. 速度 / VRAM / 品質異常先查社群實踐
+
+主視窗在跑時間 / VRAM 用量 / 輸出品質出現異常數字時,**第一動作是「查社群最佳實踐」**,不是「攤試錯選項」。試錯選項是社群實踐用過後仍不滿意才動的。
+
+實證踩坑:2026-04-30 Wan 2.2 跑 sdpa 2 分鐘/step,主視窗連續推 BlockSwap → torch compile → 480P 降規格的試錯路線,並下「24GB 筆電的天花板就是這樣」結論,等到 Wayne 主動逼「網路上沒有更好的設定?」才查到 Lightx2v 4-step LoRA 這個顯而易見的解法,實測 12.91 min/段達標。試錯路線的 token 成本 + 時間成本遠高於先查社群實踐。
+
 ---
 
 ## 文件導航
@@ -569,4 +575,4 @@ system-setup repo 各 MD 的角色:
 
 ---
 
-**最後更新**:2026-04-28
+**最後更新**:2026-04-30

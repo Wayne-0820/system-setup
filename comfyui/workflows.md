@@ -499,9 +499,9 @@ Wayne 拍 a(comfy-core 內建,無 pack 依賴 / 行為跟 was 完全等價 / 未
 
 **速度**:
 - T2V 煙測:**12.91 分鐘**(HIGH step 1 162.6s / step 2 160.7s / LOW step 1 163.5s / step 2 214.1s + VAE decode 14s + Save 13s)
-- I2V 煙測:未跑,待補
+- I2V 煙測:**14.17 分鐘**(LoadImage/Resize/I2VEncode 9s + HIGH s1 180.34s / s2 162.45s + LOW s1 190.74s / s2 223.18s + VAE decode 15.23s + Save 9.19s)
 
-**VRAM**:**24,070 MB 高峰**(98%,逼近 24 GB 物理上限,只剩 ~400 MB 緩衝)
+**VRAM**:**24,070 MB(T2V 高峰)/ 24,111 MB(I2V 高峰,98.6%,比 T2V 高 41 MiB)**(逼近 24 GB 物理上限,T2V 剩 ~400 MB 緩衝,I2V 剩 ~350 MB 緩衝)
 
 **警告**:
 - 跑這個 workflow **必須先停 Ollama / DaVinci 等 GPU 任務**,否則 OOM
@@ -510,6 +510,8 @@ Wayne 拍 a(comfy-core 內建,無 pack 依賴 / 行為跟 was 完全等價 / 未
 - 同 prompt + 同 seed 會被 ComfyUI execution cache 跳過,煙測腳本要支援 `--seed` 強制 reseed(詳踩坑 #13)
 - I2V 用 /old/ rank64 LoRA(HF 沒釋出 I2V 新版),跟 T2V 250928 新版 rank128 品質可能不對等
 
+**I2V mode 標準輸入**:`human.png`(從 `custom_nodes\ComfyUI-WanVideoWrapper\example_workflows\example_inputs\human.png` copy 到 `ComfyUI\input\`,LoadImage widget 只認 input/ 子樹)。1280×720 對齊 workflow 解析度,無 crop loss,Kijai pack 自帶測試圖。
+
 **為什麼 T2V/I2V 合一 + bypass**:Wayne 偏好「節省切換成本」,Kijai example_workflows 也常見此模式。bypass 切換不影響速度(branch 不執行),維護成本低於分開兩份檔案。
 
 **為什麼選 Lightx2v 4-step LoRA 而非 20 步原生**:筆電 5090 24GB + fp8_scaled,sdpa baseline ~2 分鐘/step,20 步約 40 分鐘/段。Lightx2v 4-step 蒸餾 LoRA 把 step 數從 20 壓到 4,維持品質 + 4× 加速,實測 12.91 分鐘達標。
@@ -517,7 +519,8 @@ Wayne 拍 a(comfy-core 內建,無 pack 依賴 / 行為跟 was 完全等價 / 未
 **未來 tune 候選**:
 - Kijai 釋出 I2V 250928+ 新版 LoRA 時更新(目前用 /old/ rank64)
 - 解析度上 1080P → VRAM 必爆,需加 BlockSwap(會拖慢) + 降 frames
-- I2V 真實輸入圖煙測(不用 example.png)
+- I2V 真實輸入圖煙測(不用 human.png)
+- SaveAnimatedWEBP 寫出檔 frame duration=None,VLC 不能播 → 換 SaveVideo (comfy-core) 或 VHS 任一條;前置裝 ffmpeg(已 2026-04-30 完成)。詳 setup.md 踩坑 #15
 
 **自動化提交**:`tools/workflow_submit.py` POST `/prompt` 可用,煙測腳本 `D:\tmp\submit_and_wait.py`(通用 prompt API submit + WS listener,記每 step 時間)。
 

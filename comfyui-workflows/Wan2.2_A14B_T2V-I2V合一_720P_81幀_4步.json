@@ -38,7 +38,7 @@
         "Node name for S&R": "WanVideoModelLoader"
       },
       "widgets_values": [
-        "Wan2_2-T2V-A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors",
+        "Wan2_2-I2V-A14B-HIGH_fp8_e4m3fn_scaled_KJ.safetensors",
         "fp16",
         "fp8_e4m3fn_scaled",
         "offload_device",
@@ -79,7 +79,7 @@
         "Node name for S&R": "WanVideoModelLoader"
       },
       "widgets_values": [
-        "Wan2_2-T2V-A14B-LOW_fp8_e4m3fn_scaled_KJ.safetensors",
+        "Wan2_2-I2V-A14B-LOW_fp8_e4m3fn_scaled_KJ.safetensors",
         "fp16",
         "fp8_e4m3fn_scaled",
         "offload_device",
@@ -208,7 +208,7 @@
       ],
       "flags": {},
       "order": 5,
-      "mode": 0,
+      "mode": 4,
       "inputs": [],
       "outputs": [
         {
@@ -241,7 +241,7 @@
       ],
       "flags": {},
       "order": 6,
-      "mode": 4,
+      "mode": 0,
       "inputs": [],
       "outputs": [
         {
@@ -261,7 +261,7 @@
         "Node name for S&R": "LoadImage"
       },
       "widgets_values": [
-        "example.png",
+        "human.png",
         "image"
       ]
     },
@@ -278,7 +278,7 @@
       ],
       "flags": {},
       "order": 7,
-      "mode": 4,
+      "mode": 0,
       "inputs": [
         {
           "name": "image",
@@ -336,7 +336,7 @@
       ],
       "flags": {},
       "order": 8,
-      "mode": 4,
+      "mode": 0,
       "inputs": [
         {
           "name": "vae",
@@ -654,7 +654,7 @@
         "Node name for S&R": "WanVideoLoraSelect"
       },
       "widgets_values": [
-        "wan22-lightning\\Wan22_A14B_T2V_HIGH_Lightning_4steps_lora_250928_rank128_fp16.safetensors",
+        "wan22-lightning\\Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors",
         1.0
       ]
     },
@@ -686,7 +686,7 @@
         "Node name for S&R": "WanVideoLoraSelect"
       },
       "widgets_values": [
-        "wan22-lightning\\Wan22_A14B_T2V_LOW_Lightning_4steps_lora_250928_rank64_fp16.safetensors",
+        "wan22-lightning\\Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors",
         1.0
       ]
     }

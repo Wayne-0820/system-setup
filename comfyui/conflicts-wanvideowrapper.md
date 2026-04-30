@@ -128,6 +128,25 @@
 | 2026-04-30 | 不裝 `onnx`(放棄 FantasyPortrait sub-pack) | 派工沒要求 FantasyPortrait,WanVideoWrapper 設計就是 optional,核心 Wan 2.2 T2V/I2V 不受影響;要用再裝 |
 | 2026-04-30 | 不採用 torch.compile inductor + sageattn 組合 | 實證:run #1 21.1 min / run #2 cache reuse 20.4 min,沒贏 sageattn baseline。inductor codegen 在當前 fp8_e4m3fn_scaled + Blackwell sm_120 環境蓋掉 sageattn fused kernel 優化。改用 Lightx2v 4-step LoRA 路線(12.91 min)|
 
+### Wan 2.2 #3c workflow T2V↔I2V mode 切換流程(2026-04-30)
+
+`Wan2.2_A14B_T2V-I2V合一_720P_81幀_4步.json` 設計成單檔 bypass 切換 mode。實機 patch 涉及 8 個變動:
+
+| Mode | Node id | type | 動作 |
+|---|---|---|---|
+| T2V branch | 6 | WanVideoEmptyEmbeds | mode 0 ↔ 4 |
+| I2V branch | 7 | LoadImage | mode 4 ↔ 0;widget `image`: I2V 時填 human.png |
+| I2V branch | 8 | ImageResizeKJv2 | mode 4 ↔ 0 |
+| I2V branch | 9 | WanVideoImageToVideoEncode | mode 4 ↔ 0 |
+| Model loader(widget swap)| 1 | WanVideoModelLoader (HIGH) | T2V-A14B_HIGH ↔ I2V-A14B-HIGH |
+| Model loader | 2 | WanVideoModelLoader (LOW) | T2V-A14B-LOW ↔ I2V-A14B-LOW |
+| LoRA loader(widget swap)| 16 | WanVideoLoraSelect (HIGH) | T2V_HIGH 250928 rank128 ↔ I2V HIGH /old/ rank64 |
+| LoRA loader | 17 | WanVideoLoraSelect (LOW) | T2V_LOW 250928 rank64 ↔ I2V LOW /old/ rank64 |
+
+不動:sampler 11/12 參數、decode/save、resolution 1280×720、frames 81、LoRA strength 1.0。
+
+**現況**:frontend JSON 已 patched 到 I2V mode(2026-04-30 I2V 煙測落地)。要再跑 T2V 必須手動 patch back 或 GUI 載入後重存。**雙檔分離 vs 維持合一**待下輪 .mp4 改造派工拍板(對齊 workflows.md「Workflow 設計通用原則 #2:一個 workflow 一個職責」候選)。
+
 ---
 
 ## pip_overrides 設定(opencv 長期解,2026-04-30 待 Wayne 拍板)
