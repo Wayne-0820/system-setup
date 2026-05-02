@@ -55,3 +55,9 @@ snapshot-*/
 # (README.md 例外保留,讓目錄結構可見)
 progress-reports/*
 !progress-reports/README.md
+
+# Assignments — session 1 寫的派工,session 2 讀完跑完進 progress-reports 後刪檔
+# (README.md 例外保留,讓目錄結構可見)
+assignments/*
+!assignments/README.md
+!progress-reports/session1-snapshot.md
