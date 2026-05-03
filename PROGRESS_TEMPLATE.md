@@ -14,7 +14,7 @@
 
 # 進度報告
 
-**日期**:YYYY-MM-DD
+**日期**:YYYY-MM-DD(實機執行當天,規則 15)
 **對話主題**:[一句話標題,例如「ComfyUI Klein 9B Base workflow 建立」]
 **執行 Claude 模型**:[Sonnet 4.6 / Opus 4.7 / 其他]
 **對話總長**:[幾小時 / 幾個 turn,大概就好]

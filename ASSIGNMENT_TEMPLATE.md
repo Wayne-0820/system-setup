@@ -118,7 +118,7 @@
 
 完成後產 progress report,落地路徑:
 
-`D:\Work\system-setup\progress-reports\<YYYY-MM-DD>_<task-slug>.md`
+`D:\Work\system-setup\progress-reports\<YYYY-MM-DD>_<task-slug>.md`(此處日期 = 實機執行當天,規則 15)
 
 格式照 `D:\Work\system-setup\PROGRESS_TEMPLATE.md`。
 
@@ -144,6 +144,7 @@
 8. **數值門檻標 GB / GiB**(規則 13):邊界附近強制標明,默認 GB decimal
 9. **§限制 SHA256 校驗清單 mirror candidate JSON 全 widget**(規則 14):派工撰寫前 grep candidate JSON 列全部 model / file loader widget,不只「主模型 + LoRA」直觀
 10. **派工撰寫前 audit candidate JSON 結構**:grep `definitions.subgraphs` 檢測 ComfyUI 0.19 subgraph,確認 `tools/workflow_submit.py` 兼容性
+11. **派工檔名日期語意 = 實機執行當天**(規則 15):派工檔名 `<YYYY-MM-DD>` = session 2 執行當天本地系統日期;跨日場景由 session 2 step 1.5 verify + rename 派工檔對齊
 
 ---
 

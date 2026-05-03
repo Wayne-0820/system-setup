@@ -48,6 +48,20 @@ Wayne 只貼本檔。讀完即可工作。
 ### 3.1 收到「讀 assignments/<檔>」指令後
 
 1. `Get-Content D:\Work\system-setup\assignments\<檔>.md` 讀派工全文
+1.5. **規則 15 verify**:讀完派工後立刻驗證派工檔名日期 = 實機今日:
+
+   ```powershell
+   $today = Get-Date -Format 'yyyy-MM-dd'
+   $assignFile = '<派工檔名,例 2026-05-04_foo.md>'
+   $assignDate = $assignFile.Substring(0, 10)
+   if ($today -ne $assignDate) {
+       $newName = "${today}_$($assignFile.Substring(11))"
+       Rename-Item "D:\Work\system-setup\assignments\$assignFile" `
+                   "D:\Work\system-setup\assignments\$newName"
+   }
+   ```
+
+   progress report 檔名用 `$today` 對齊實機。詳見 SYSADMIN_BRIEFING 規則 15。
 2. **嚴格依派工字面執行** — 派工沒列的事不做,派工列的硬限制不違反
 3. 跑派工各 step,記錄結果
 4. 任一 STOP 觸發點(派工 step 失敗 / 結果分支 / 邊界違反)→ 立刻寫 progress report STOP 段 + 通知 Wayne
@@ -93,7 +107,7 @@ Wayne 只貼本檔。讀完即可工作。
 
 ---
 
-## 4. 紀律(必遵 — 規則 1-14 source-of-truth 在 SYSADMIN_BRIEFING.md)
+## 4. 紀律(必遵 — 規則 1-15 source-of-truth 在 SYSADMIN_BRIEFING.md)
 
 ### 4.1 規則 9 STOP 中性紀律(訂正版)
 

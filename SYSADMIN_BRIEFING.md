@@ -644,6 +644,48 @@ subagent 完成後 return 主視窗,主視窗整合進派工流程(不直接 com
 
 ---
 
+### 規則 15. 派工 / progress report 日期語意統一為實機執行當天
+
+派工檔名 `assignments/<YYYY-MM-DD>_<slug>.md` + progress report 檔名 `progress-reports/<YYYY-MM-DD>_<slug>.md` 的 `<YYYY-MM-DD>` **語意統一為「實機執行當天」**(session 2 執行那天的本地系統日期),不是「派工撰寫日」也不是「議題提出日」。
+
+#### 為什麼
+
+主視窗寫派工跟 session 2 執行可能跨日(派工撰寫日 vs 執行日不同)— 例:晚上 23:55 寫派工隔日 00:30 執行 / 派工撰寫當天電腦當機隔日重跑 / 議題在 5/3 拍板派工 5/4 才寫。若派工 / progress report 日期語意各自為政:
+
+- 派工檔名用「派工撰寫日」→ progress report 用「執行日」→ 兩檔對不上
+- 派工檔名用「議題提出日」→ 跟實機執行日無關,git log 排序混亂
+- 純自由 → 跨檔接班看 git log 推不出時序
+
+統一為「實機執行當天」以實機真相為準。
+
+#### Session 2 跑派工 step 1.5(規則 15 verify)
+
+讀派工(step 1)後 step 1.5 立刻驗證 + 不對齊則 rename:
+
+```powershell
+$today = Get-Date -Format 'yyyy-MM-dd'
+$assignFile = '<派工檔名,例 2026-05-04_foo.md>'
+$assignDate = $assignFile.Substring(0, 10)
+if ($today -ne $assignDate) {
+    $newName = "${today}_$($assignFile.Substring(11))"
+    Rename-Item "D:\Work\system-setup\assignments\$assignFile" `
+                "D:\Work\system-setup\assignments\$newName"
+    # progress report 檔名也用 $today 對齊實機
+}
+```
+
+#### 主視窗派工撰寫紀律
+
+- 派工檔名日期欄填當下 `Get-Date -Format 'yyyy-MM-dd'`(主視窗判斷當天會執行)
+- 跨日場景由 session 2 step 1.5 verify + rename 處理(主視窗不預判)
+- progress report 路徑寫進派工 §報告路徑 時用 `<YYYY-MM-DD>` 佔位 + 補語意「(此處日期 = 實機執行當天,規則 15)」
+
+#### 實證踩坑
+
+2026-05-03 規則 15 派工執行後當機 + ALT+F4 衝掉 patches,2026-05-04 重跑 — 實機日期跟原派工檔名日期 mismatch → 規則 15 self-eat-dogfood 觸發 step 1.5 rename。
+
+---
+
 ## 文件導航
 
 system-setup repo 各 MD 的角色:
