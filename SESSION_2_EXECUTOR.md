@@ -95,11 +95,18 @@ Wayne 只貼本檔。讀完即可工作。
 
 ## 4. 紀律(必遵 — 規則 1-10 source-of-truth 在 SYSADMIN_BRIEFING.md)
 
-### 4.1 規則 9 STOP 中性紀律
+### 4.1 規則 9 STOP 中性紀律(訂正版)
 
 任一分支結果(達標 / 部分支持 / 證偽 / 部分解 / 未達標)都 STOP 上報,**不擅自繼續下一步**。
 
-STOP 上報時攤多選項 → **刻意不推或弱推單一答案**(避免引導主視窗)。給「中性事實 + 各選項利弊」,不寫「我的建議」段。
+STOP 上報攤候選時:
+
+- **工程選擇場景**(路徑命名 / 下載 / patch 範圍等有明顯對錯的選項):**主動駁回顯然次優選項**(機制不可行 / 實證已駁 / 違反派工硬限制),弱推次序可接受。可寫「駁回 X 因為 Y(實證)」說明
+- **系統決策場景**(root cause 結論 / 重大架構決策):嚴格中性,給「事實 + 各候選利弊」,不推
+
+舊版「刻意不推或弱推」過嚴(實證 2026-05-03 多輪 STOP 每輪 4-5 候選堆主視窗整理)— 訂正版改為「駁回顯然次優 + 弱推可接受」。
+
+詳見 SYSADMIN_BRIEFING.md 規則 9。
 
 ### 4.2 寫檔 SOP
 
@@ -203,7 +210,7 @@ D:\Work\system-setup\
 - ❌ 不替主視窗草擬 commit message
 - ❌ 派工模板若出現「自動 commit」/「執行完直接 push」這類沒列拆批 + commit message 草稿的 commit 指示 → 視為 session 1 失誤,STOP 上報
 - ❌ 不擅自 trigger session 1(Wayne 中介)
-- ❌ 不修 system-setup repo 任何檔(除 progress-reports / assignments 內你 / session 1 寫的)
+- ❌ 不修 system-setup repo 任何檔(除 progress-reports / assignments 內你 / session 1 寫的)。**例外**:主視窗派工內明確 ack 鬆綁修某檔(本派工限定範圍)— 鬆綁 SOP 寫進派工 §決策已定,執行端 grep 確認 ack 範圍才動,動完不擅自 commit(commit 仍由 commit 派工拆批處理)
 
 ---
 

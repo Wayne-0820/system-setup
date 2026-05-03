@@ -458,35 +458,54 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 **派工紀律**:bulk patch 派工模板的「寫檔 SOP」段該明列「line ending 偵測 + 保留」這條,跟 BOM 驗證並列。
 
-### 規則 8. 派工模板交叉驗證(C 改架構後弱化)
+### 規則 8. 派工撰寫前 verify 引用準確性(evergreen)
 
-精準派工(指定 node level 改動)前,主視窗需 cross-verify 機器真相五條:widgets_values / mode / link / KSampler 路徑 / 工具實機介面。**派工指檔位置(§N / 第 N 條 / Y 段尾)前先 grep verify**,不靠記憶。
+主視窗寫派工前,**對「引用既有 MD / 踩坑編號 / 規則編號 / progress report 路徑 / 檔位置」逐條 grep verify**,不靠記憶。引用準確性是派工的基礎,撰寫盲點會跨 session 傳染。
 
-**C 改架構後弱化**:目標型派工(`ASSIGNMENT_TEMPLATE.md`)讓執行端自己讀實機檔規劃,主視窗不再寫精準 patch 表。本規則僅適用主視窗仍寫精準派工的場景(例:緊急一次性 patch、主視窗有完整實機脈絡時)。
+#### 必 verify 三類
 
-實證踩坑:2026-04-29 #3a-v2 派工 v1 五項全踩(text_encoders 路徑 / mode=4 bypass / KSampler 連 node 45 內建非 lrzjason / steps=20 / `--validate-only` flag 不存在),5 個 STOP 上報後訂正。同輪主視窗指控「handoff bug」,grep 後 0 處錯誤路徑 — 錯誤只在派工自身。
+(A) **規則 / 踩坑編號**:派工引用「規則 N」「踩坑 #N」前 grep `setup.md` / `SYSADMIN_BRIEFING.md` 確認編號 + 主題對齊
+(B) **檔位置 / 路徑**:派工引用「§N / 第 N 條 / Y 段尾」/「`D:\Work\... \X.md`」前確認檔存在 + 段落結構不變
+(C) **candidate workflow JSON 結構**:派工指 candidate JSON 前 audit JSON(grep `definitions.subgraphs` 檢測 ComfyUI 0.19 subgraph / mirror 所有 dropdown widget 校驗下載清單 / 結構 vs 提交 tooling 兼容性)
+
+#### 實證踩坑
+
+- **2026-04-29 #3a-v2**:派工 v1 五項全踩(text_encoders 路徑 / mode=4 bypass / KSampler 連 node 45 內建非 lrzjason / steps=20 / `--validate-only` flag 不存在),5 個 STOP 上報後訂正。同輪主視窗指控「handoff bug」,grep 後 0 處錯誤路徑 — 錯誤只在派工自身
+- **2026-05-03 candidate B 派工**:派工 §5 引用踩坑 #11「dropdown widget 校驗對齊」依據「分目錄存放」決策,但踩坑 #11 實際是 same-file path separator 問題,跟不同檔混淆無關。session 2 規則 8 落地 verify 後抓出引用錯誤,主視窗認錯訂正
+- **同輪派工 §限制 SHA256 校驗清單**:只列主模型 + LoRA 4 檔,漏 candidate B subgraph 內 CLIPLoader + VAELoader + LoadImage widget,session 2 跑時連續撞 STOP 上報
+
+#### 跟「目標型派工」原則對應
+
+`ASSIGNMENT_TEMPLATE.md` 是目標型派工(主視窗不寫 patch 表 / widgets_values index / REPL 指令),但仍需引用既有 MD / 規則 / candidate JSON 當「決策已定」/「限制」/「參考文件」依據。引用本身的準確性是 evergreen 紀律,跟派工是「目標型」還是「精準型」無關。
 
 ### 規則 9. 主視窗 vs 執行端 — 職責切割
 
-| 層級 | 主視窗 | 執行端(Claude Code)|
+| 層級 | 主視窗(session 1) | 執行端(session 2 / Claude Code)|
 |---|---|---|
 | **機器真相** | 不直接讀大型檔(JSON / source / 大 log)| grep / 讀檔 / 跑 verify / 安裝 / 下載 / patch / 煙測 |
-| **外網查詢** | 輔助參考(web_search / web_fetch),為決策抓判斷依據 | 任務執行(Context7 抓 library / API docs),為任務抓 docs |
-| **決策** | 拍板 / 寫派工 / 整合 progress report / 累積規則 | STOP 上報 + 攤選項(刻意不推或弱推單一答案,避免引導主視窗)|
+| **外網查詢** | 工具受限(雙 session 架構下主視窗實機可能沒 web_fetch / web_search)| 為主上網(Context7 抓 library / API docs / WebFetch / WebSearch / subagent 並行查訊息) |
+| **決策** | 拍板 / 寫派工 / 整合 progress report / 累積規則 | STOP 上報 + 攤候選(主動駁回顯然次優,弱推次序可接受)|
 
-兩端都能上網,**差別在目的不在權限**。
+執行端為主上網,主視窗靠執行端報告 + 既有 MD / 規則 source-of-truth + Wayne 中介傳遞外部資訊。
 
 #### STOP 上報附主視窗查詢清單
 
-執行端 STOP 上報攤選項時,**附「主視窗需要的外網查詢題目」清單**(若有),讓主視窗外網查詢有方向。例:
+執行端 STOP 上報攤候選時,**附「主視窗需要的外網查詢題目」清單**(若有),由主視窗派 subagent / 寫進下輪派工讓執行端跑。例:
 
-> 候選 a/b/c verify 完,需要主視窗查:
+> 候選 a/b/c verify 完,需要主視窗外部查證:
 > 1. KJNodes `StringConstantMultiline` 在社群 workflow 是否常見替代?
 > 2. comfy-core 有沒有 PR / issue 在做 native multiline node?
 
-#### 引導效應紀律
+#### 中性紀律(訂正版)
 
-執行端在 STOP 給「我的建議」會稀釋主視窗獨立判斷空間。執行端 STOP 上報攤多選項時**刻意不推或弱推**,給「中性事實 + 各選項利弊」,不寫「我的建議」段。主視窗看到推單一答案時強迫自己看完所有選項才拍板。
+**舊版「刻意不推或弱推」紀律過嚴**,實證踩坑(2026-05-03 派工流程連續 4 輪 STOP 每輪 4-5 候選堆給 Wayne,Wayne 嫌「為什麼一次跳這麼多給我選」)。訂正為:
+
+- **執行端 STOP 上報攤候選時**:主動駁回顯然次優選項(機制不可行 / 實證已駁 / 違反派工硬限制),弱推次序可接受。**不堆「中性 4-5 個」給主視窗整理**
+- **主視窗評估候選時**:主動駁回顯然次優 + 強推單一答案前列其他可行選項利弊。**選項數 ≤ 3 給 Wayne**(2 是常態,3 是邊界,>3 必須先收斂)
+- **強推單一答案的場景**:工程選擇(路徑 / 命名 / patch 範圍)有明顯對錯時,主視窗可強推 + 給理由,Wayne 可駁回
+- **嚴格中性場景**:root cause 結論 / 重大架構決策 / 涉及 Wayne 系統脈絡的拍板,主視窗仍中性攤 ≤3 候選
+
+**判別維度**:工程選擇 vs 系統決策。工程選擇可弱推 / 強推;系統決策嚴格中性。
 
 (Context7 安裝 + 派工模板帶 `use context7` 用法搬到 `D:\Work\system-setup\CLAUDE.md`。)
 
@@ -495,6 +514,108 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 主視窗在跑時間 / VRAM 用量 / 輸出品質出現異常數字時,**第一動作是「查社群最佳實踐」**,不是「攤試錯選項」。試錯選項是社群實踐用過後仍不滿意才動的。
 
 實證踩坑:2026-04-30 Wan 2.2 跑 sdpa 2 分鐘/step,主視窗連續推 BlockSwap → torch compile → 480P 降規格的試錯路線,並下「24GB 筆電的天花板就是這樣」結論,等到 Wayne 主動逼「網路上沒有更好的設定?」才查到 Lightx2v 4-step LoRA 這個顯而易見的解法,實測 12.91 min/段達標。試錯路線的 token 成本 + 時間成本遠高於先查社群實踐。
+
+### 規則 11. 派工 §STOP 觸發點排除執行端可自處的執行步驟
+
+派工 §STOP 觸發條件**只列需主視窗 / Wayne 介入的事**,不包含執行端可自行處理的執行步驟。
+
+#### STOP 觸發點保留的 5 類
+
+(1) 需主視窗決策的選項分支
+(2) 機器破壞性風險(OOM / hang / driver crash / 無法 reverse 的寫入)
+(3) 跨檔 patch / rename / 子目錄重構需求
+(4) 結果違反派工硬限制
+(5) 派工內容跟實機真相不一致(任一 cross-verify 失敗)
+
+#### 該排除的執行步驟(執行端自處)
+
+- 啟動 server / cli tool(`Start-Process 'D:\Work\system-setup\start_comfyui.bat'` / 跑 npm install 之類)
+- 等可 poll 的狀態(`Test-NetConnection 127.0.0.1 -Port 8188` / curl `/system_stats` / log tail)
+- 標準 retry 策略(下載重連、API rate limit 退避)— 派工沒禁止 retry 的話可自處
+- 跑 verify 命令收集事實(grep / Get-Content / nvidia-smi)
+
+#### 實證踩坑
+
+2026-05-03 派工 §STOP 第 3 條寫「ComfyUI 8188 沒 listen → 上報請 Wayne 啟動 start_comfyui.bat」,執行端嚴格按字面 STOP 等 Wayne 介入。Wayne 嫌「派工的還想偷懶,叫他啟動」— 派工撰寫盲點,啟動 ComfyUI 是執行端可自處執行步驟,不該寫進 STOP 條件。
+
+#### 派工撰寫紀律
+
+寫 §STOP 觸發條件時自問:「這條 STOP 是真的需要主視窗介入,還是執行端 PowerShell 一行就能解?」一行能解的不寫 STOP。
+
+### 規則 12. 派工 §決策已定 鬆綁範圍三分(核心 / supporting / I/O)
+
+派工 §決策已定 寫「不擅自 patch widget value」這類紀律時,**鬆綁範圍三分明寫**,不留二分歧義。
+
+#### 三分定義
+
+(A) **strict(不可 patch)**:核心對照變數 — 影響 sampler 行為 / 跑通結果 / 性能對照的變數
+   - 路線(wrapper vs native core)/ attention 派發 / sampler / scheduler / cfg
+   - dual-stage 切點(start_step / end_step)/ steps / shift
+   - resolution / 幀數 / LoRA strength
+
+(B) **鬆綁 supporting model**:CLIP / VAE / 其他 supporting model
+   - dropdown 命名差 / 精度差(fp8 vs fp16 / bf16 vs fp16 等同 model 不同 repackage)允許 patch 指機器既有檔
+   - patch 前 cross-verify 底層 model 是否真的同(repackage vs 不同 model)
+
+(C) **鬆綁 I/O widget**:input / output / 註解類 widget
+   - LoadImage filename / LoadVideo filename / 其他 input loader filename
+   - SaveVideo filename_prefix / SaveImage filename_prefix / 其他 output saver filename
+   - Note text / MarkdownNote text / 註解類 widget
+   - 路徑類 widget(只要不影響核心對照指標)
+
+#### 實證踩坑
+
+2026-05-03 candidate B 派工 §4「不擅自 patch widget」一開始只考慮二分(核心對照變數 vs supporting model),沒列 I/O widget 第三類。執行端撞 LoadImage missing image STOP 上報,主視窗訂正鬆綁範圍含 I/O widget。
+
+#### 派工撰寫紀律
+
+派工 §決策已定 / §限制 寫 widget 紀律時,直接引用本規則三分,不另行重抄。三分定義有更新時改本規則,跨派工自動 sync。
+
+### 規則 13. 派工數值單位明確標 GB / GiB
+
+派工列數值門檻(VRAM / disk / model size 等)**明確標 GB(decimal,1 GB = 1000 MB)或 GiB(binary,1 GiB = 1024 MiB)**,避免邊界解讀爭議。
+
+#### 默認規則
+
+- **無單位後綴**:預設 GB decimal(對齊磁碟廠商 / 雲端 / OS 顯示慣例)
+- **GB 後綴**:GB decimal
+- **GiB 後綴**:GiB binary
+- **MiB / KiB / TiB**:binary
+- **MB / KB / TB**:decimal
+
+#### 實證踩坑
+
+2026-05-03 派工 §限制「VRAM ≥22 GB」沒明標單位。執行端 audit nvidia-smi 結果 22,466 MiB:GB decimal 解讀 ≈ 22.46 GB ≥ 22 GB ✓;GiB binary 解讀 ≈ 21.94 GiB < 22 GiB(差 62 MiB)略邊界。本輪 audit 認為 GB decimal 解讀對齊 ✓。
+
+#### 派工撰寫紀律
+
+寫數值門檻時自問:「這個門檻在 binary / decimal 邊界附近會出現解讀爭議嗎?」邊界附近強制標明單位。
+
+### 規則 14. 派工 §限制 下載校驗清單 mirror candidate JSON 全部 dropdown widget
+
+派工指 candidate workflow JSON 跑煙測 / 對照時,**§限制 SHA256 校驗清單該 mirror candidate JSON 全部 dropdown widget**,不只直觀「主模型 + LoRA」。
+
+#### 撰寫前 audit 範圍
+
+派工撰寫前 grep candidate JSON 的所有 model loader / file loader widget:
+
+- `UNETLoader.unet_name` / `CheckpointLoaderSimple.ckpt_name`(主模型)
+- `LoraLoaderModelOnly.lora_name` / `LoraLoader.lora_name`(LoRA)
+- `CLIPLoader.clip_name` / `DualCLIPLoader.clip_name1/2`(CLIP / T5)
+- `VAELoader.vae_name`(VAE)
+- `LoadImage.image` / `LoadVideo.file`(input)
+- `ControlNetLoader.control_net_name`(ControlNet)
+- `UpscaleModelLoader.model_name`(Upscale)
+
+每類列入 §限制 SHA256 校驗清單(若機器無檔則列入下載清單),並對照規則 12 三分判定該 widget 是 strict / supporting / I/O。
+
+#### 實證踩坑
+
+2026-05-03 candidate B 派工 §限制 SHA256 校驗只列 4 檔(主模型 ×2 + LoRA ×2),漏 candidate B 內 CLIPLoader + VAELoader + LoadImage widget。執行端跑時連續撞 STOP 三輪。
+
+#### 派工撰寫紀律
+
+寫 §限制 下載校驗前先 grep candidate JSON 列全部 model / file loader widget,不靠記憶 / 直觀。
 
 ---
 

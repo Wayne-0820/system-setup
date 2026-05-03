@@ -132,8 +132,10 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `qwen_image_edit_2509_fp8_e4m3fn.safetensors` | 19.03 GB | Qwen Image Edit 2509 主模型(fp8 e4m3fn 量化,Workflow #3a-v2「保留人物改姿勢」核心) |
 | `Wan2_2-T2V-A14B_HIGH_fp8_e4m3fn_scaled_KJ.safetensors` | 14.0 GB | Wan 2.2 T2V A14B HIGH noise(fp8 e4m3fn scaled,Kijai;**注意:T2V HIGH 用 underscore `_HIGH`,LOW 用 hyphen `-LOW`,是 Kijai 歷史命名遺跡**) |
 | `Wan2_2-T2V-A14B-LOW_fp8_e4m3fn_scaled_KJ.safetensors` | 14.0 GB | Wan 2.2 T2V A14B LOW noise(fp8 e4m3fn scaled,Kijai) |
-| `Wan2_2-I2V-A14B-HIGH_fp8_e4m3fn_scaled_KJ.safetensors` | 14.0 GB | Wan 2.2 I2V A14B HIGH noise(fp8 e4m3fn scaled,Kijai) |
-| `Wan2_2-I2V-A14B-LOW_fp8_e4m3fn_scaled_KJ.safetensors` | 14.0 GB | Wan 2.2 I2V A14B LOW noise(fp8 e4m3fn scaled,Kijai) |
+| `Wan2_2-I2V-A14B-HIGH_fp8_e4m3fn_scaled_KJ.safetensors` | 14.0 GB | Wan 2.2 I2V A14B HIGH noise(fp8 e4m3fn scaled,Kijai;**KJ wrapper 路線專用,state_dict 跟 ComfyUI core 不對齊**) |
+| `Wan2_2-I2V-A14B-LOW_fp8_e4m3fn_scaled_KJ.safetensors` | 14.0 GB | Wan 2.2 I2V A14B LOW noise(fp8 e4m3fn scaled,Kijai;同上) |
+| `wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors` | 14.29 GB(13.32 GiB)| Wan 2.2 I2V A14B HIGH noise(fp8 e4m3fn scaled,Comfy-Org/Wan_2.2_ComfyUI_Repackaged,SHA256 `6122e79d...8d5e6a42`;**ComfyUI core native 路線專用**)|
+| `wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors` | 14.29 GB(13.32 GiB)| Wan 2.2 I2V A14B LOW noise(fp8 e4m3fn scaled,Comfy-Org repackage,SHA256 `5471a457...fffc21e`;同上)|
 
 ### CLIP / Text Encoders(`D:\Models\diffusion\clip\`)
 
@@ -144,7 +146,8 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `clip_l.safetensors` | 0.229 GB | FLUX 配套 CLIP-L(Workflow #2 / 未來 FLUX 系列共用) |
 | `t5xxl_fp8_e4m3fn.safetensors` | 4.558 GB | FLUX 配套 T5-XXL fp8(Workflow #2 / 未來 FLUX 系列共用) |
 | `qwen_2.5_vl_7b_fp8_scaled.safetensors` | 8.74 GB | Qwen 2.5 VL 7B(fp8 scaled,Workflow #3a-v2 / 未來 Qwen Edit / Qwen Image 系列共用)— **注意路徑紀律:Comfy-Org repo URL 標 `split_files/text_encoders/`,本機 yaml 只映射 `clip:`,規範一律落 `clip\` 子目錄(2026-04-29 派工 v1 第 6 個 bug 訂正)** |
-| `umt5-xxl-enc-fp8_e4m3fn.safetensors` | 6.27 GB | Wan 2.2 text encoder(UMT5-XXL fp8 e4m3fn,Kijai/WanVideo_comfy) |
+| `umt5-xxl-enc-fp8_e4m3fn.safetensors` | 6.27 GB | Wan 2.x text encoder(UMT5-XXL fp8 e4m3fn,Kijai/WanVideo_comfy;**KJ wrapper 路線專用,跟 ComfyUI core CLIPLoader state_dict 不對齊不可混用,實證見踩坑 #19**)|
+| `umt5_xxl_fp8_e4m3fn_scaled.safetensors` | 6.27 GB(6.27 GiB)| Wan 2.x text encoder(UMT5-XXL fp8 e4m3fn scaled,Comfy-Org/Wan_2.1_ComfyUI_repackaged,SHA256 `c3355d30...651204f68`;**ComfyUI core CLIPLoader 專用**)|
 
 ### VAE(`D:\Models\diffusion\vae\`)
 
@@ -166,8 +169,10 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | `consistence_edit_v2.safetensors` | 0.571 GB | lrzjason Qwen Edit「保留人物」核心 LoRA(strength=0.4,Workflow #3a-v2 用;HF mirror `hoveyc/comfyui-models`,SHA256 跟 CivitAI 主來源一致)|
 | `wan22-lightning\Wan22_A14B_T2V_HIGH_Lightning_4steps_lora_250928_rank128_fp16.safetensors` | 1.227 GB | Wan 2.2 T2V 4-step Lightning LoRA HIGH(2025-09-28 新版,asymmetric rank128,Workflow #3c 用,cfg=1.0)|
 | `wan22-lightning\Wan22_A14B_T2V_LOW_Lightning_4steps_lora_250928_rank64_fp16.safetensors` | 0.614 GB | Wan 2.2 T2V 4-step Lightning LoRA LOW(rank64,2025-09-28 新版)|
-| `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors` | 0.614 GB | Wan 2.2 I2V 4-step Lightning LoRA HIGH(rank64,Kijai/old 版本,HF 未釋出 I2V 新版,從 `LoRAs/Wan22-Lightning/old/` 下載)|
-| `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors` | 0.614 GB | Wan 2.2 I2V 4-step Lightning LoRA LOW(rank64,/old/ 版本)|
+| `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH_fp16.safetensors` | 0.614 GB | Wan 2.2 I2V 4-step Lightning LoRA HIGH(rank64,Kijai/old 版本,HF 未釋出 I2V 新版,從 `LoRAs/Wan22-Lightning/old/` 下載;**KJ wrapper 路線專用**)|
+| `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_LOW_fp16.safetensors` | 0.614 GB | Wan 2.2 I2V 4-step Lightning LoRA LOW(rank64,/old/ 版本;同上)|
+| `wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors` | 1.14 GB | Wan 2.2 I2V 4-step lightx2v Lightning LoRA HIGH(Comfy-Org/Wan_2.2_ComfyUI_Repackaged v1,SHA256 `d176c808...deff11e`;**ComfyUI core native 路線專用**;Workflow #3c-v2 用,LoRA strength=1.0)|
+| `wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors` | 1.14 GB | Wan 2.2 I2V 4-step lightx2v Lightning LoRA LOW(Comfy-Org repackage v1,SHA256 `024f21de...0d8aab7f9`;同上)|
 
 ### ControlNet(`D:\Models\diffusion\controlnet\`)
 
@@ -187,6 +192,23 @@ powershell -NoExit -ExecutionPolicy Bypass -Command "Set-Location 'D:\Work\Comfy
 | 模型 | 大小 | 用途 |
 |---|---|---|
 | `llama-joycaption-beta-one-hf-llava\`(4 shards) | 15.81 GB | JoyCaption Beta1 圖像反推(SHA256 全綠) |
+
+---
+
+## Wan 2.2 模型 distribution 區分(Kijai vs Comfy-Org repackage)
+
+Wan 2.x 系列主模型 / Lightning LoRA / CLIP 在不同 source 有不同 repackage,**state_dict key naming 不對齊,不可混用**(2026-05-03 candidate B 煙測實證,踩坑 #19)。
+
+| 類型 | Kijai 版(KJ wrapper 路線專用) | Comfy-Org repackage(ComfyUI core native 路線專用) | 對應 loader node |
+|---|---|---|---|
+| 主模型 | `Wan2_2-I2V-A14B-HIGH/LOW_fp8_e4m3fn_scaled_KJ.safetensors`(Kijai/WanVideo_comfy)| `wan2.2_i2v_high/low_noise_14B_fp8_scaled.safetensors`(Comfy-Org/Wan_2.2_ComfyUI_Repackaged)| KJ:`WanVideoModelLoader` / native:`UNETLoader` |
+| Lightning LoRA | `wan22-lightning\Wan2.2-Lightning_I2V-A14B-4steps-lora_HIGH/LOW_fp16.safetensors`(Kijai/old)| `wan2.2_i2v_lightx2v_4steps_lora_v1_high/low_noise.safetensors`(Comfy-Org repackage v1)| KJ:`WanVideoLoraSelect` / native:`LoraLoaderModelOnly` |
+| Text Encoder | `umt5-xxl-enc-fp8_e4m3fn.safetensors`(Kijai/WanVideo_comfy)| `umt5_xxl_fp8_e4m3fn_scaled.safetensors`(Comfy-Org/Wan_2.1_ComfyUI_repackaged,Wan 2.x 共用)| KJ:`LoadWanVideoT5TextEncoder` / native:`CLIPLoader` |
+| VAE | `Wan2_1_VAE_bf16.safetensors`(Kijai/WanVideo_comfy)| (Comfy-Org repackage `wan_2.1_vae.safetensors` 未實機驗證 state_dict 對齊性)| KJ:`WanVideoVAELoader` / native:`VAELoader` |
+
+**實證**(2026-05-03,Wan 2.2 #3c candidate B):Kijai 版 `umt5-xxl-enc-fp8_e4m3fn.safetensors` 餵 ComfyUI core `CLIPLoader` 撞 `NotImplementedError: Cannot copy out of meta tensor; no data!`(stack: `comfy/sd1_clip.py:213` → `comfy/ops.py:151` → `comfy/model_management.py:1287`)— state_dict key naming 不對齊,部分 weight load fail 留 meta tensor。改用 Comfy-Org repackage 後跑通(execution 217.7s,跟 wrapper 路線合一檔 baseline 14.17 min/segment 比快 3.9×)。
+
+**紀律(規則 12 (B) cross-verify 教訓)**:supporting model patch 前 cross-verify state_dict 對齊性(safetensors header inspection 取 keys 比對 / ComfyUI 試 load 看 partial load warning),不靠檔名假設「同 base model 不同 repackage = 純命名差」。
 
 ---
 
@@ -632,6 +654,25 @@ Start-Process -WorkingDirectory "D:\Work\ComfyUI_portable\ComfyUI_windows_portab
 
 **累積投入**:ε-1a → ε-9 共 9 輪派工(每輪 15-30 min,加主視窗整合 + 中性 raise),~3-4 小時累積。Sage3 vs sage2 性能差異**未驗證**(因為從未跑通完整鏈),即使跑通收益不確定。Walking back 對齊投入產出比評估。
 
+**(A) 路線實證落地**(2026-05-03,Wan 2.2 #3c candidate B 煙測):
+- candidate B(Comfy-Org official subgraph,純 native ComfyUI core 路線)720×720 81f 4-step 整段 execution **217.7s**(=3.63 min)
+- vs 合一檔 wrapper 路線 baseline 14.17 min/segment(850s)
+- **快 ~3.9×**
+- 對 finding 2「WanVideoWrapper sampler 0 個 `mm.load_models_gpu` 呼叫,完全脫離主框架」獲得實證 corroboration — wrapper 跳脫 ComfyUI 標準 ModelPatcher 框架是性能瓶頸 root cause
+- Wan 2.2 #3c root cause 8 輪可結
+
+### 19. supporting model state_dict key naming 跟檔名分離(2026-05-03)
+
+**症狀**:Wan 2.2 #3c candidate B 煙測,把 ComfyUI core native 路線的 CLIPLoader widget patch 指向 Kijai 版 `umt5-xxl-enc-fp8_e4m3fn.safetensors`(同 base model UMT5-XXL,同 fp8 e4m3fn 量化精度,只差檔名命名)後 POST /prompt 通過 validation,但 execution 階段 CLIPTextEncode 撞 `NotImplementedError: Cannot copy out of meta tensor; no data!`(stack: `comfy/sd1_clip.py:213` → `comfy/ops.py:151` → `comfy/model_management.py:1287`)。
+
+**原因**:Kijai 版 supporting model 的 state_dict key naming 跟 ComfyUI core loader 預期不對齊。Kijai 版 `umt5-xxl-enc-fp8_e4m3fn.safetensors` 專為 KJ wrapper 自家 `LoadWanVideoT5TextEncoder` 設計;ComfyUI core `CLIPLoader` 預期 Comfy-Org repackage 命名 `umt5_xxl_fp8_e4m3fn_scaled.safetensors`。檔名雖然檔名都標 fp8_e4m3fn,但 state_dict key naming 不同 → 部分 weight load fail 留在 meta tensor → forward 時 `cast_to_gathered` 在 meta 上 `copy_` 撞 NotImplementedError。
+
+**解法**:下載 Comfy-Org repackage `umt5_xxl_fp8_e4m3fn_scaled.safetensors`(`Comfy-Org/Wan_2.1_ComfyUI_repackaged/split_files/text_encoders/`,SHA256 `c3355d30...651204f68`,6.27 GB),patch CLIPLoader widget 指 Comfy-Org 命名後跑通。
+
+**紀律(規則 12 (B) cross-verify 教訓)**:supporting model patch 前 cross-verify state_dict 對齊性(safetensors header inspection 取 keys 比對 / ComfyUI 試 load 看 partial load warning),不靠檔名假設「同 base model 不同 repackage = 純命名差」。對應 SYSADMIN_BRIEFING.md 規則 12 (B)。
+
+**未來注意**:Wan 2.x 系列 Kijai 版 vs Comfy-Org repackage **主模型 + Lightning LoRA 預期同樣分歧**(雖然 candidate B 直接用 Comfy-Org 4 檔沒實證 Kijai 主模型/LoRA 餵給 native loader 是否也撞);未來如要混用要先 cross-verify state_dict。
+
 ---
 
 ## 下一階段規劃
@@ -647,7 +688,7 @@ Start-Process -WorkingDirectory "D:\Work\ComfyUI_portable\ComfyUI_windows_portab
 | ~~3a~~ | ~~Kontext + ControlNet 改姿態(保留人物)~~ | ~~24~~ | ❌ **Deprecated** — Kontext ReferenceLatent 結構性壓 ControlNet,實證不適合此任務(2026-04-29) |
 | 3a-v2 | Qwen Edit 2509 改姿態保留人物 | TBD | Qwen image-edit + consistence LoRA(規劃中) |
 | 3b | FLUX + ControlNet 純 pose 生人物 ✅ | 20 | FLUX.1 Dev + Pro 2.0 + DWPose(2026-04-29 完成,作為 #3a 副產品) |
-| 3c | Wan 2.2 T2V/I2V 720P 81幀 4步 ✅ | TBD | Wan 2.2 A14B + Lightx2v 4-step LoRA(2026-04-30 完成,T2V 煙測 12.91 min)|
+| 3c | Wan 2.2 T2V/I2V 720P 81幀 4步 ✅ | TBD | Wan 2.2 A14B + Lightx2v 4-step LoRA(2026-04-30 wrapper T2V 煙測 12.91 min;2026-05-03 native I2V candidate B 落地 217.7s,**(A) 路線結論:wrapper 是性能瓶頸 root cause,native 路線快 3.9×**,#3c root cause 8 輪可結)|
 | 4 | Qwen3 TTS 聲音克隆 | 7 | Qwen3 TTS 1.7B + Whisper Large v3 |
 | 5 | Qwen image 擴圖 | 28 | Qwen Image + Inpainting |
 | 6 | 智能多角度生成 | 21 | Qwen-Image-Edit 2511 + 多角度 LoRA |
@@ -704,4 +745,4 @@ Start-Process -WorkingDirectory "D:\Work\ComfyUI_portable\ComfyUI_windows_portab
 
 ---
 
-**最後更新**:2026-04-30
+**最後更新**:2026-05-03

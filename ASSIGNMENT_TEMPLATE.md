@@ -45,10 +45,11 @@
 
 - [列出已決策的選項]
 
-範例:
-- node 35 用 PrimitiveStringMultiline(comfy-core 內建)取代 was-node-suite Text Multiline
-- C 方案 unbypass 三節點(node 4 / 34 / 44)+ KSampler 改 8 步
+範例(目標型,具體 node id / 路徑由執行端讀實機檔自決):
+- C 方案 unbypass 三節點 + KSampler 改 8 步(具體 node id 由執行端 audit 實機 workflow JSON)
+- 用 comfy-core 內建 multiline 取代第三方(具體節點名由執行端 verify 實機 custom_nodes/ 自決)
 - KSampler scheduler / cfg 由執行端 verify Lightning LoRA README 自決
+- widget patch 紀律引用 SYSADMIN_BRIEFING 規則 12 三分(strict 核心對照變數 / 鬆綁 supporting model / 鬆綁 I/O widget),不另抄
 
 如果沒有任何已決策的選項,寫「無」。
 
@@ -62,6 +63,8 @@
 - 不裝 was-node-suite-comfyui(衝突,conflicts.md 既有決策)
 - 不動 link 結構,只動 node mode + widgets_values + type
 - 跨檔 bulk patch 時保留各檔 line ending(規則 7)
+- VRAM ≥22 GB(decimal,規則 13)/ disk ≥32 GB(decimal)
+- candidate JSON 全 dropdown widget 對齊(SHA256 校驗清單 mirror 全 model / file loader,規則 14)
 
 ---
 
@@ -96,11 +99,18 @@
 
 - [列出需要回報主視窗做決策的情境,執行端遇到 → 上報不繼續]
 
-範例:
+範例(規則 11:STOP 只列需主視窗 / Wayne 介入的事,執行端可自處的不寫):
 - 衝突檢查發現 N 個 same-name override(影響既有節點)
 - 煙測 server validation fail(node_errors 非空)
 - 模型路徑或檔名不存在(下載沒完整或 yaml mapping 出錯)
 - 派工內容跟實機真相不一致(任一 cross-verify 失敗)
+- 機器破壞性風險(OOM / hang / driver crash / nvlddmkm error)
+
+**不寫進 STOP**(執行端自處):
+- 啟動 server / cli tool(`Start-Process .bat` 可解)
+- 等可 poll 的狀態(`Test-NetConnection` / curl 可解)
+- 標準 retry(下載重連 / API rate limit 退避)
+- 跑 verify 命令收集事實
 
 ---
 
@@ -122,12 +132,18 @@
 
 ## 給主視窗的設計提醒
 
-寫派工前自問四件事:
+寫派工前自問:
 
-1. **目標 vs 步驟**:這條是「要達成什麼」還是「怎麼做」?如果是怎麼做,改寫成怎麼判定 done。
-2. **決策 vs 自決**:這個選擇是主視窗已拍板,還是執行端可根據實機 verify 決定?寫進「決策已定」段的不要再讓執行端問。
-3. **重抄 vs 引用**:這份內容是不是已經在某 MD 裡?如果是,引用本地路徑讓執行端自己讀,不重抄。
-4. **完成判定可機讀**:pass/fail 條件能寫成 grep / assert / curl 嗎?能 → 寫具體;不能 → 描述清楚現象。
+1. **目標 vs 步驟**:這條是「要達成什麼」還是「怎麼做」?如果是怎麼做,改寫成怎麼判定 done
+2. **決策 vs 自決**:這個選擇是主視窗已拍板,還是執行端可根據實機 verify 決定?寫進「決策已定」段的不要再讓執行端問
+3. **重抄 vs 引用**:這份內容是不是已經在某 MD 裡?如果是,引用本地路徑讓執行端自己讀,不重抄
+4. **完成判定可機讀**:pass/fail 條件能寫成 grep / assert / curl 嗎?能 → 寫具體;不能 → 描述清楚現象
+5. **引用 verify**(規則 8 evergreen):派工引用「規則 N」「踩坑 #N」「§N」「progress report 路徑」前 grep verify,不靠記憶。引用錯誤跨 session 傳染
+6. **STOP 排除執行端可自處**(規則 11):啟動 server / poll / retry / 跑 verify 命令不寫 STOP — 一行 PowerShell 能解的不寫
+7. **§決策已定 widget 紀律引用三分**(規則 12):strict 核心對照變數 / 鬆綁 supporting model / 鬆綁 I/O widget,不另抄
+8. **數值門檻標 GB / GiB**(規則 13):邊界附近強制標明,默認 GB decimal
+9. **§限制 SHA256 校驗清單 mirror candidate JSON 全 widget**(規則 14):派工撰寫前 grep candidate JSON 列全部 model / file loader widget,不只「主模型 + LoRA」直觀
+10. **派工撰寫前 audit candidate JSON 結構**:grep `definitions.subgraphs` 檢測 ComfyUI 0.19 subgraph,確認 `tools/workflow_submit.py` 兼容性
 
 ---
 
