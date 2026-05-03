@@ -603,6 +603,35 @@ Start-Process -WorkingDirectory "D:\Work\ComfyUI_portable\ComfyUI_windows_portab
 
 **未來注意**:影片相關任務 ffmpeg / ffprobe 是基線工具,不該等到要用才裝。decisions.md winget 清單已加。
 
+### 18. Wan 2.2 14B I2V sage3 升級 walking back(2026-05-03,ε 系列收尾)
+
+**症狀**:嘗試把 Wan 2.2 A14B I2V workflow 的 self-attn + cross-attn 兩條路徑都從 sage2 升 sage3 fp4 kernel(API JSON / 合一檔 `attention_mode` 從 `sageattn` 改成 `sageattn_3`),sampler 在 step 0 立刻 `Fatal Python error: Aborted`。
+
+**原因**:跑 9 輪 ε 系列派工(ε-1a → ε-9),確認 layered failure **至少 3 層**,前兩層各自有 patch 驗證有效但**第 3 層未解**。
+
+| 層 | 機制 | finding 輪 | 解法狀態 |
+|---|---|---|---|
+| (a) | model 在 cpu — WanVideoWrapper LoRA merge 後 `nodes_model_loading.py:1797` 強制 `model.to(offload_device)` + sampler 入口 `load_weights` 條件 `patcher.model["sd"] is not None` 不滿足沒 fire 拉回 cuda → forward cross-device → driver Aborted | ε-7 print(`param_cpu=1095, param_cuda=0`)| **ε-8 patch** 驗證有效:`nodes_sampler.py` line 873(`gc.collect()` 後)加 `transformer.to(device)`,VRAM sampling 階段 15.5 GB used 證明 model 拉回 cuda |
+| (b) | cross-attn 走 sdpa — `model.py:925` cross_attn 創建點 missing `attention_mode` kwarg → 走 `attention.py:117` SDPA fallback → seq_len 75600 SDPA 在 cuda 仍 Fatal Aborted | ε-2 vendor source debug print | **ε-3 patch** 驗證有效:`model.py:925` 加 `attention_mode=self.attention_mode` kwarg(對齊 self_attn 行為),stack trace 不再命中 attention.py:117 |
+| (c) | FFN `ffn_chunked` 內 activation forward Aborted — stack `activation.py:816 → container.py:253 → model.py:998 ffn_chunked → block.forward(line 1388) → WanModel.forward(line 3274)`,跟 model device / attention path 都無關 | ε-9 暴露(ε-3 + ε-8 兩 patch 疊加後仍 Abort)| **未解**,獨立 root cause |
+
+**解法**:**walking back 到 sage2 baseline v8**(2026-04-30,14.17 min/segment)。合一檔 + API JSON `sageattn_3` 4 hits 改回 `sageattn`(2026-05-03 ε-final 完成)。Vendor source 不留任何 patch 殘留(`model.py` SHA256 = `90A3CE73...` / `nodes_sampler.py` SHA256 = `BDD0BE10...` / `attention.py` SHA256 = `13A5DFBB...`,均對齊 baseline)。
+
+**關鍵 finding**(避免未來重蹈):
+1. `--disable-dynamic-vram` 是 ComfyUI core flag,**不控制 WanVideoWrapper 內部 offload 邏輯**(ε-4 verify)
+2. WanVideoWrapper sampler 不走 ComfyUI ModelPatcher 標準流程(0 個 `mm.load_models_gpu` / `patch_model` 呼叫),完全脫離主框架(ε-6 audit)
+3. WanVideoModelLoader `load_device` widget default `"offload_device"`;`merge_loras` 從 LoRA dict 內取 default True;`nodes_model_loading.py:1797` LoRA merge 後**無條件** `model.to(offload_device)` fire(ε-5 audit)
+4. WanModel **0 buffer**(全用 `nn.Parameter`,沒 `register_buffer`)→ ε-6 audit 「buffer 漏網」假設 falsified(ε-7 verify)
+5. ε-3 progress report (C 分支) 當時把 FFN Aborted 歸因「offload mode」**不準確** — ε-9 證明即使 model 在 cuda + cross-attn 走 sage3,FFN 仍 Abort
+
+**未來「sage3 重啟」決策依據**:
+- WanVideoWrapper upstream 修了第 3 層(`ffn_chunked` activation forward 在 sage3 路徑下的 fail mode)→ 可重新嘗試(GitHub issues / PRs 追蹤)
+- ε-3 / ε-8 兩 patch 各自仍可立刻 apply(預期 patched SHA256:`model.py` = `27EB2D3BB46798D52453218A9029E6F3A3FE623B661CF390396EFD158397D671`,`nodes_sampler.py` = `60EA92C84083436C307E300BCEAE996B521BC0F5EDBE30DBAD82EAED319F2483`)
+- 走 ε-9 路線(兩 patch 疊加煙測)直接 verify 第 3 層是否解
+- 若仍 Abort,接受 sage3 在 Wan 2.2 14B I2V 不 ready,sage2 baseline 維持
+
+**累積投入**:ε-1a → ε-9 共 9 輪派工(每輪 15-30 min,加主視窗整合 + 中性 raise),~3-4 小時累積。Sage3 vs sage2 性能差異**未驗證**(因為從未跑通完整鏈),即使跑通收益不確定。Walking back 對齊投入產出比評估。
+
 ---
 
 ## 下一階段規劃
