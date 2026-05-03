@@ -50,6 +50,8 @@ snapshot-*/
 .claude/*
 # 例外:skills/ 入 repo(可分享的 skill 定義)
 !.claude/skills/
+# 例外:agents/ 入 repo(可分享的 subagent 定義 — rule-curator 等)
+!.claude/agents/
 
 # Progress reports — 本地執行端任務暫存,內容會被整合進對應 MD 後刪除
 # (README.md 例外保留,讓目錄結構可見)

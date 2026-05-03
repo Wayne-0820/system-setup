@@ -128,7 +128,7 @@ Wayne 切回 session 1 跟你說「讀 progress-reports/<檔名>」之後,你 `c
 讀完後做以下事:
 
 1. 整理候選證據強度更新表(承前接後)
-2. 攤下輪 verify 路線(候選 + 利弊),**不推單一答案**
+2. 攤下輪 verify 路線(候選 + 利弊),按規則 9 訂正版判別工程選擇 vs 系統決策(工程選擇可弱推 / 強推 + 主動駁回顯然次優, ≤3 選項;系統決策嚴格中性)
 3. 主動 raise 教訓暫存(若 progress report 內有可累積教訓)
 4. 評估是否到 commit 點(到了,草擬 commit message + 拆批,催 Wayne 拍板)
 
@@ -139,7 +139,35 @@ Wayne 切回 session 1 跟你說「讀 progress-reports/<檔名>」之後,你 `c
 - 派工拆批清單(本批 commit 涵蓋哪些檔)
 - 寫 commit 派工到 `assignments/<YYYY-MM-DD>_commit-<task-slug>.md` 給 session 2 跑
 
-session 2 跑 commit 派工時 git push 前 STOP 等 Wayne 過目。
+**push 前不 STOP**(2026-05-03 永久訂正):Wayne 事前 ack commit 派工的拆批 + message 草稿即實質過目;push 前 procedural redundancy 取消。session 2 commit + push 連續跑,寫 progress report 收尾。
+
+### 5.4 Invoke subagent(rule-curator 等)
+
+主視窗可 invoke in-session subagent 執行特定任務(SYSADMIN_BRIEFING.md 規則 9 「主視窗 invoke subagent 場景」段落地)。subagent 是**主視窗的延伸**,不是獨立 IPC 端點;Wayne 不介入 subagent invoke(主視窗直接用 `Agent` tool spawn)。
+
+#### Invoke `rule-curator`(規則精修員)
+
+定義檔:`D:\Work\system-setup\.claude\agents\rule-curator.md`
+
+典型場景:
+
+1. **規則精修**:本對話踩坑或主視窗 audit 發現規則矛盾 / 缺漏 / 表述對不上 → invoke curator audit + 寫 patch
+2. **接班 audit**:新主視窗讀完 source-of-truth 後 → invoke curator audit 跨檔 cross-reference 對齊性(對齊規則 1)
+3. **教訓暫存統整**:主視窗在 commit 點 → invoke curator 統整暫存累積
+4. **commit 拆批前 verify**:主視窗草擬 commit message 含「規則精修」性質時 → invoke curator audit patch 完整性
+
+#### Invoke 後流程
+
+1. curator return finding / patch 落地清單給主視窗
+2. 主視窗讀 return → 整合進派工流程(commit 拆批 / follow-up audit / 等)
+3. **commit 仍走 session 2 + Wayne 過目**(curator 不直接 commit / 不直接 trigger session 2)
+4. 主視窗在 commit 派工內列 curator 動過的檔(working tree dirty 對齊)
+
+#### 不適用場景(走主視窗或 session 2,不 invoke curator)
+
+- ❌ 具體任務 root cause 調查(主視窗工作)
+- ❌ 跑 ComfyUI 煙測 / 模型下載 / 跑實機 GPU(session 2 工作)
+- ❌ 寫 progress report / 整合進主 MD / 直接 commit(主視窗 / session 2 工作)
 
 ---
 

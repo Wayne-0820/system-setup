@@ -2,7 +2,9 @@
 Convert ComfyUI frontend workflow JSON -> API prompt graph and POST /prompt.
 
 Usage:
-  python workflow_submit.py <workflow_json_path> [--label name] [--validate-only]
+  python workflow_submit.py <workflow_json_path> [--label name]
+                                                 [--validate-only]
+                                                 [--ws-monitor]
 
 Handles hidden widgets (ComfyUI auto-injects extras for some nodes):
   - KSampler / KSamplerAdvanced: 'control_after_generate' inserted after seed/noise_seed
@@ -14,9 +16,20 @@ Handles ComfyUI 0.19+ subgraph workflows:
     definition GUID) into flat workflow before conversion.
   - Backward compatible: flat workflows pass through untouched.
 
+Optional ws monitor (--ws-monitor):
+  - Connects to ComfyUI /ws (RFC 6455 minimal client, stdlib-socket-only) and
+    captures per-node + per-step events (execution_start / executing / progress
+    / executed / execution_success | execution_error) with timestamps for the
+    submitted prompt_id. Same uuid is used for both ws clientId and POST body
+    client_id so events route to this listener.
+  - Opt-in (default off): backward-compatible with existing /history polling.
+  - Falls back to /history polling if ws handshake fails (safety net).
+
 Returns:
   prompt_id from /prompt response. Polls /history every 2s until done.
   --validate-only: stops after /prompt accepts (does not poll for completion).
+  --ws-monitor: listens /ws until execution_success/error, prints per-event
+    timing log, and on success emits a per-node + per-step summary table.
 
 History:
   2026-04-29 staged at D:\\tmp\\submit_smoke.py during Workflow #3 smoke testing.
@@ -24,14 +37,25 @@ History:
              (no logic changes, only docstring path/name; phase-1 promotion).
   2026-05-03 added unfold_subgraphs() for ComfyUI 0.19+ subgraph support
              (Wan 2.2 I2V Candidate B Comfy-Org official template uses subgraph).
+  2026-05-03 added optional --ws-monitor: stdlib-socket RFC 6455 client that
+             listens /ws for execution_start / executing / progress / executed
+             / execution_success | execution_error, records per-node + per-step
+             timestamps. Lets callers verify strict per-step timing without
+             polling /history. Backward compat preserved (opt-in flag, default
+             off, fallback to polling on ws handshake failure).
 """
-import copy
-import json
-import sys
-import urllib.request
-import time
-import uuid
 import argparse
+import base64
+import copy
+import hashlib
+import json
+import os
+import socket
+import struct
+import sys
+import time
+import urllib.request
+import uuid
 
 HIDDEN_AFTER = {
     ("KSampler", "seed"),
@@ -284,8 +308,242 @@ def to_api(frontend):
     return api
 
 
-def post_prompt(prompt_dict):
-    client_id = str(uuid.uuid4())
+# --- ws monitor (RFC 6455 minimal client, stdlib-socket-only) ---------------
+#
+# Server-to-client frames are unmasked per spec (RFC 6455 §5.3); we only need
+# to receive frames, never to send mid-stream, so we don't implement masking.
+# Opcodes handled: 0x1 text (JSON event), 0x2 binary (preview / progress text;
+# ignored), 0x8 close, 0x9 ping (ignored), 0xA pong (ignored).
+
+_WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+WS_HOST = "127.0.0.1"
+WS_PORT = 8188
+
+
+def _ws_handshake(host, port, client_id, timeout=10):
+    """RFC 6455 client handshake. Returns (sock, leftover_buf).
+
+    leftover_buf carries any bytes recv'd past the response head (rare but
+    legal; first frame may arrive concatenated with the 101 response).
+    """
+    key = base64.b64encode(os.urandom(16)).decode("ascii")
+    expected = base64.b64encode(
+        hashlib.sha1((key + _WS_GUID).encode("ascii")).digest()
+    ).decode("ascii")
+    sock = socket.create_connection((host, port), timeout=timeout)
+    sock.settimeout(timeout)
+    req = (
+        f"GET /ws?clientId={client_id} HTTP/1.1\r\n"
+        f"Host: {host}:{port}\r\n"
+        f"Upgrade: websocket\r\n"
+        f"Connection: Upgrade\r\n"
+        f"Sec-WebSocket-Key: {key}\r\n"
+        f"Sec-WebSocket-Version: 13\r\n"
+        f"\r\n"
+    ).encode("ascii")
+    sock.sendall(req)
+    buf = b""
+    while b"\r\n\r\n" not in buf:
+        chunk = sock.recv(4096)
+        if not chunk:
+            sock.close()
+            raise ConnectionError("ws handshake: server closed before response")
+        buf += chunk
+    head, _, leftover = buf.partition(b"\r\n\r\n")
+    head_text = head.decode("latin-1")
+    first_line = head_text.split("\r\n", 1)[0]
+    if "101" not in first_line:
+        sock.close()
+        raise ConnectionError(f"ws handshake: not 101 -- {first_line!r}")
+    headers = {}
+    for line in head_text.split("\r\n")[1:]:
+        if ":" in line:
+            k, v = line.split(":", 1)
+            headers[k.strip().lower()] = v.strip()
+    if headers.get("sec-websocket-accept") != expected:
+        sock.close()
+        raise ConnectionError(
+            f"ws handshake: accept mismatch "
+            f"(expected={expected} got={headers.get('sec-websocket-accept')!r})"
+        )
+    return sock, leftover
+
+
+def _recv_n(sock, n, buf):
+    """Read exactly n bytes; return (data, remaining_buf)."""
+    while len(buf) < n:
+        chunk = sock.recv(max(4096, n - len(buf)))
+        if not chunk:
+            raise ConnectionError("ws: socket closed mid-frame")
+        buf += chunk
+    return buf[:n], buf[n:]
+
+
+def _ws_recv_frame(sock, buf):
+    """Read one RFC 6455 frame from server.
+
+    Returns (fin, opcode, payload_bytes, leftover_buf).
+    Server frames are unmasked per spec; if a server unexpectedly masks, we
+    still unmask defensively rather than rejecting.
+    """
+    hdr, buf = _recv_n(sock, 2, buf)
+    b0, b1 = hdr[0], hdr[1]
+    fin = bool(b0 & 0x80)
+    opcode = b0 & 0x0F
+    masked = bool(b1 & 0x80)
+    plen = b1 & 0x7F
+    if plen == 126:
+        ext, buf = _recv_n(sock, 2, buf)
+        plen = struct.unpack(">H", ext)[0]
+    elif plen == 127:
+        ext, buf = _recv_n(sock, 8, buf)
+        plen = struct.unpack(">Q", ext)[0]
+    mask = b""
+    if masked:
+        mask, buf = _recv_n(sock, 4, buf)
+    payload, buf = _recv_n(sock, plen, buf)
+    if masked:
+        payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload))
+    return fin, opcode, payload, buf
+
+
+def monitor_ws(sock, leftover, prompt_id, label="", t0=None,
+               per_frame_timeout=600):
+    """Listen ws frames until execution_success / execution_error for prompt_id.
+
+    Records per-event timestamps (relative to t0, defaults to call time) and
+    per-node start / end / step events. Prints a live event log to stdout.
+
+    Returns dict:
+      events: list[(dt, event_type, data)]
+      nodes: dict[node_id_str -> {start_dt, end_dt, steps: [(dt, value, max)]}]
+      execution_start_dt / execution_success_dt: float | None
+      execution_error: dict | None
+      closed_reason: str  ('success' | 'error' | 'closed' | 'timeout' | 'eof')
+    """
+    if t0 is None:
+        t0 = time.time()
+    sock.settimeout(per_frame_timeout)
+    events = []
+    nodes = {}
+    result = {
+        "events": events,
+        "nodes": nodes,
+        "execution_start_dt": None,
+        "execution_success_dt": None,
+        "execution_error": None,
+        "closed_reason": "",
+    }
+    buf = leftover
+    try:
+        while True:
+            fin, opcode, payload, buf = _ws_recv_frame(sock, buf)
+            if opcode == 0x8:  # close
+                result["closed_reason"] = "closed"
+                break
+            if opcode in (0x9, 0xA):  # ping / pong
+                continue
+            if opcode == 0x2:  # binary (preview image / progress text); ignore
+                continue
+            if opcode != 0x1:  # unknown
+                continue
+            dt = time.time() - t0
+            try:
+                msg = json.loads(payload.decode("utf-8"))
+            except (UnicodeDecodeError, json.JSONDecodeError) as e:
+                print(f"[{label}] ws: bad text frame: {e}", file=sys.stderr)
+                continue
+            etype = msg.get("type")
+            edata = msg.get("data", {}) or {}
+            pid = edata.get("prompt_id")
+            if pid is not None and pid != prompt_id:
+                continue  # event for a different prompt; skip
+            events.append((dt, etype, edata))
+            if etype == "execution_start":
+                result["execution_start_dt"] = dt
+                print(f"[{label}] [{dt:7.2f}s] execution_start", flush=True)
+            elif etype == "executing":
+                nid = edata.get("node")
+                if nid is None:
+                    print(f"[{label}] [{dt:7.2f}s] executing(node=null) -- legacy done signal",
+                          flush=True)
+                else:
+                    nodes.setdefault(str(nid), {"steps": []})["start_dt"] = dt
+                    cls = edata.get("display_node") or ""
+                    print(f"[{label}] [{dt:7.2f}s] executing node={nid} ({cls})",
+                          flush=True)
+            elif etype == "progress":
+                nid = edata.get("node")
+                val = edata.get("value")
+                mx = edata.get("max")
+                nodes.setdefault(str(nid), {"steps": []})["steps"].append((dt, val, mx))
+                print(f"[{label}] [{dt:7.2f}s] progress node={nid} {val}/{mx}",
+                      flush=True)
+            elif etype == "executed":
+                nid = edata.get("node")
+                nodes.setdefault(str(nid), {"steps": []})["end_dt"] = dt
+                print(f"[{label}] [{dt:7.2f}s] executed node={nid}", flush=True)
+            elif etype == "execution_success":
+                result["execution_success_dt"] = dt
+                result["closed_reason"] = "success"
+                print(f"[{label}] [{dt:7.2f}s] execution_success", flush=True)
+                break
+            elif etype == "execution_error":
+                result["execution_error"] = edata
+                result["closed_reason"] = "error"
+                print(f"[{label}] [{dt:7.2f}s] execution_error: "
+                      f"{edata.get('exception_message') or edata}", flush=True)
+                break
+            # status / progress_state / execution_cached / execution_interrupted:
+            # captured into events list, no live log line (keeps output readable).
+    except socket.timeout as e:
+        result["closed_reason"] = f"timeout: {e}"
+        print(f"[{label}] ws monitor timeout: {e}", file=sys.stderr)
+    except ConnectionError as e:
+        if not result["closed_reason"]:
+            result["closed_reason"] = f"eof: {e}"
+        print(f"[{label}] ws monitor closed: {e}", file=sys.stderr)
+    finally:
+        try:
+            sock.close()
+        except Exception:
+            pass
+    return result
+
+
+def summarize_ws_result(result, label=""):
+    """Print per-node + per-step summary table from monitor_ws result."""
+    print(f"[{label}] --- ws timing summary ---")
+    nodes = result["nodes"]
+    if result["execution_start_dt"] is not None:
+        print(f"[{label}] execution_start_dt = {result['execution_start_dt']:.2f}s")
+    for nid, info in sorted(nodes.items(), key=lambda kv: kv[1].get("start_dt", 0.0)):
+        start = info.get("start_dt")
+        end = info.get("end_dt")
+        steps = info.get("steps", [])
+        seg = (end - start) if (start is not None and end is not None) else None
+        seg_str = f"{seg:6.2f}s" if seg is not None else "  n/a"
+        print(f"[{label}]   node={nid:>4}  start={start if start is not None else 'n/a'!s:>7}  "
+              f"end={end if end is not None else 'n/a'!s:>7}  segment={seg_str}  steps={len(steps)}")
+        if steps:
+            prev = start if start is not None else steps[0][0]
+            for sdt, sval, smax in steps:
+                step_dt = sdt - prev
+                print(f"[{label}]       step {sval}/{smax} at {sdt:6.2f}s (+{step_dt:5.2f}s)")
+                prev = sdt
+    if result["execution_success_dt"] is not None:
+        print(f"[{label}] execution_success_dt = {result['execution_success_dt']:.2f}s")
+    if result["execution_error"] is not None:
+        print(f"[{label}] execution_error: {result['execution_error']}")
+    print(f"[{label}] closed_reason: {result['closed_reason']}")
+
+
+# --- HTTP submission --------------------------------------------------------
+
+
+def post_prompt(prompt_dict, client_id=None):
+    if client_id is None:
+        client_id = str(uuid.uuid4())
     body = json.dumps({"prompt": prompt_dict, "client_id": client_id}).encode("utf-8")
     req = urllib.request.Request("http://127.0.0.1:8188/prompt", data=body, headers={"Content-Type": "application/json"}, method="POST")
     with urllib.request.urlopen(req, timeout=30) as r:
@@ -303,12 +561,30 @@ def get_queue():
         return json.loads(r.read())
 
 
+def _collect_outputs(entry):
+    """Pull image / video / audio filenames from a /history entry's outputs dict."""
+    out_files = []
+    for _nid_o, info in entry.get("outputs", {}).items():
+        for img in info.get("images", []) or []:
+            out_files.append(img.get("filename"))
+        for vid in info.get("videos", []) or []:
+            out_files.append(vid.get("filename"))
+        for aud in info.get("audio", []) or []:
+            out_files.append(aud.get("filename"))
+    return out_files
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
     ap.add_argument("--label", default="")
     ap.add_argument("--validate-only", action="store_true",
                     help="Stop after /prompt accepts (no polling for completion)")
+    ap.add_argument("--ws-monitor", action="store_true",
+                    help="Connect to ComfyUI /ws (RFC 6455 stdlib client) and "
+                         "capture per-node + per-step timing events for the "
+                         "submitted prompt_id. Opt-in (default off); falls back "
+                         "to /history polling on handshake failure.")
     args = ap.parse_args()
 
     with open(args.path, "r", encoding="utf-8") as f:
@@ -327,18 +603,62 @@ def main():
     for nid in list(api_graph.keys())[:3]:
         print(f"  {nid} -> {api_graph[nid]}")
 
+    client_id = str(uuid.uuid4())
+    use_ws = args.ws_monitor and not args.validate_only
+    ws_sock = None
+    ws_leftover = b""
+    if use_ws:
+        try:
+            ws_sock, ws_leftover = _ws_handshake(WS_HOST, WS_PORT, client_id)
+            print(f"[{args.label}] ws connected (clientId={client_id})")
+        except Exception as e:
+            print(f"[{args.label}] WARN: ws handshake failed ({e}); "
+                  f"fallback to /history polling", file=sys.stderr)
+            use_ws = False
+            ws_sock = None
+
     t0 = time.time()
-    resp = post_prompt(api_graph)
+    resp = post_prompt(api_graph, client_id)
     print(f"[{args.label}] /prompt response: {resp}")
     pid = resp.get("prompt_id")
     if not pid:
         print(f"[{args.label}] no prompt_id, error?")
+        if ws_sock is not None:
+            try:
+                ws_sock.close()
+            except Exception:
+                pass
         sys.exit(2)
     if args.validate_only:
         print(f"[{args.label}] --validate-only: prompt_id={pid} accepted; exit")
+        if ws_sock is not None:
+            try:
+                ws_sock.close()
+            except Exception:
+                pass
         return
-    print(f"[{args.label}] prompt_id={pid}, polling /history every 2s...")
 
+    if use_ws:
+        print(f"[{args.label}] prompt_id={pid}, ws monitor listening...")
+        result = monitor_ws(ws_sock, ws_leftover, pid, label=args.label, t0=t0)
+        elapsed = time.time() - t0
+        try:
+            entry = get_history().get(pid, {})
+            status = entry.get("status", {})
+            out_files = _collect_outputs(entry)
+        except Exception as e:
+            status, out_files = {}, []
+            print(f"[{args.label}] history fetch failed: {e}", file=sys.stderr)
+        summarize_ws_result(result, label=args.label)
+        print(f"[{args.label}] DONE in {elapsed:.2f}s "
+              f"(closed_reason={result['closed_reason']})")
+        print(f"  status={status}")
+        print(f"  outputs={out_files}")
+        if result["closed_reason"] == "error":
+            sys.exit(4)
+        return
+
+    print(f"[{args.label}] prompt_id={pid}, polling /history every 2s...")
     while True:
         time.sleep(2)
         # Check queue first (running or pending)
@@ -351,11 +671,7 @@ def main():
             if pid in hist:
                 entry = hist[pid]
                 status = entry.get("status", {})
-                outputs = entry.get("outputs", {})
-                out_files = []
-                for nid_o, info in outputs.items():
-                    for img in info.get("images", []):
-                        out_files.append(img.get("filename"))
+                out_files = _collect_outputs(entry)
                 elapsed = time.time() - t0
                 print(f"[{args.label}] DONE in {elapsed:.2f}s")
                 print(f"  status={status}")

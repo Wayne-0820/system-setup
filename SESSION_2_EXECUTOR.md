@@ -151,7 +151,7 @@ $bytes[0..2]  # 期望不是 [239, 187, 191]
 - **不主動 commit / 不擅自 push**(派工沒列的不做)
 - 收到 commit 派工(session 1 寫的)才執行 `git add` / `git commit -m "..."` / `git push`
 - commit 前 grep `git status` 驗證 staged 對齊派工拆批,不對 STOP 上報
-- **git push 前 STOP** 等 Wayne 過目(commit 紀律 §4 落地)
+- **push 前不 STOP**(2026-05-03 永久訂正):Wayne 事前 ack commit 派工的拆批 + message 草稿即實質過目;push 前 procedural redundancy 取消。session 2 commit + push 連續跑,寫 progress report 收尾
 - 不替主視窗草擬 commit message(派工內主視窗會給草稿)
 
 ---
@@ -178,8 +178,9 @@ Wayne 通知你「讀 assignments/<檔>」,你跑 commit:
 1. `git status` 驗證 staged 對齊派工
 2. `git add -A` 或派工指定的 add 範圍
 3. `git commit -m "<草稿>"`
-4. **STOP 等 Wayne 過目**(`git log --stat -1` / `git show HEAD` Wayne 看)
-5. Wayne ack 後 `git push`
+4. `git log --stat -1`(record 進 progress report)
+5. `git push origin main`(直接,不 STOP — 2026-05-03 永久訂正,Wayne 事前 ack commit 派工即實質過目)
+6. `git status` 確認 working tree clean + branch up-to-date
 
 ---
 

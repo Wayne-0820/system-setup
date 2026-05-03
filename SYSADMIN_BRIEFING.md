@@ -507,6 +507,15 @@ $bytes = [System.IO.File]::ReadAllBytes("$PWD\<config>.yaml")
 
 **判別維度**:工程選擇 vs 系統決策。工程選擇可弱推 / 強推;系統決策嚴格中性。
 
+#### 主視窗 invoke subagent 場景
+
+主視窗可 invoke in-session subagent 執行特定任務(subagent 是**主視窗的延伸**,不是獨立第 3 列;規則 9 表格仍是「主視窗 / 執行端」雙列):
+
+- **rule-curator**(`.claude/agents/rule-curator.md`):規則精修員 — audit 規則文件矛盾 / 缺漏 / 跨檔 cross-reference 對齊。典型 invoke 場景:本對話踩坑 raise 規則矛盾 / 接班一致性 audit / 教訓暫存統整 / commit 拆批前 verify 規則精修完整性。詳見 agent definition「Invoke 場景」段
+- **其他 subagent**(視需要新增 + Claude Code 內建 Plan / Explore / general-purpose 等):跟 rule-curator 同性質,主視窗委派 specific 任務,IPC 不變(commit 仍走 session 2 + Wayne 過目)
+
+subagent 完成後 return 主視窗,主視窗整合進派工流程(不直接 commit / 不直接 trigger session 2)。
+
 (Context7 安裝 + 派工模板帶 `use context7` 用法搬到 `D:\Work\system-setup\CLAUDE.md`。)
 
 ### 規則 10. 速度 / VRAM / 品質異常先查社群實踐

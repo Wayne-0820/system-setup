@@ -62,6 +62,8 @@ ComfyUI workflow JSON 有兩種格式:**frontend**(GUI 用,有 nodes/links/widge
 
 ComfyUI 0.19+ 引入 subgraph 結構(workflow JSON 含 `definitions.subgraphs[]` + 頂層 nodes 內 type 是 GUID 的 instance);本工具自動 `unfold_subgraphs()` 展開 subgraph instance(boundary input/output rewiring + inner nodes 加進頂層),flat workflow 短路 return,向後兼容。
 
+`--ws-monitor` opt-in flag 走 `ws://127.0.0.1:8188/ws` 拿 per-node + per-step timing(RFC 6455 stdlib client,純 stdlib `socket` + `base64` + `hashlib` + `struct`,~200 lines);ws connect 失敗 fallback `/history` polling。
+
 ### 依賴
 
 純 stdlib(`json` / `urllib.request` / `argparse` / `uuid` / `time` / `copy`)。系統 Python 或 ComfyUI `python_embeded` 都可跑。ComfyUI 必須在 8188 listen(因為要 fetch `/object_info` schema)。
@@ -77,6 +79,9 @@ ComfyUI 0.19+ 引入 subgraph 結構(workflow JSON 含 `definitions.subgraphs[]`
 
 # validate-only(POST 拿 prompt_id 立退;prompt 仍進 queue 執行)
 & "...\python.exe" "...\workflow_submit.py" "<workflow.json>" --label name --validate-only
+
+# ws monitor(per-node + per-step timing,opt-in)
+& "...\python.exe" "...\workflow_submit.py" "<workflow.json>" --label name --ws-monitor
 ```
 
 ### 參數
@@ -86,6 +91,7 @@ ComfyUI 0.19+ 引入 subgraph 結構(workflow JSON 含 `definitions.subgraphs[]`
 | `<workflow_json_path>` | frontend workflow JSON 絕對路徑(必填,positional) |
 | `--label` | 印 log 用的標籤,任意字串(選填,預設空) |
 | `--validate-only` | 拿 prompt_id 立退,不 polling completion(prompt 仍進 queue 執行;ComfyUI 沒 dry-run validation API) |
+| `--ws-monitor` | opt-in 走 ws subprotocol 拿 per-node + per-step timestamps(RFC 6455 stdlib client);失敗 fallback `/history` polling |
 
 ### 行為
 
@@ -124,12 +130,14 @@ ComfyUI 有些 node 在 widgets_values 多塞 frontend-only 資訊(node 不註�
 
 - 還沒實作 `proxyWidgets` override(subgraph instance widgets_values 非空時 raise NotImplementedError);本對話 candidate B `widgets_values=[]` 走 inner default
 - 還沒實作 inner node id / link id renumbering(若 subgraph 內 ids 跟 top-level 衝突 raise NotImplementedError);本對話 candidate B 設計避免衝突
-- per-step timing 沒拿到(`/history` messages 只含 execution_start / execution_cached / execution_success;要 per-step 需要 websocket `/ws` monitor,本工具沒實作)
+- **ws monitor `executed` event 不全發**:ComfyUI `execution.py:562` 只在 node 有 `output_ui` 時 send `executed`(SaveImage / SaveVideo / 等 UI-output node);KSamplerAdvanced / CLIPTextEncode / VAEDecode 等沒 UI output 不發。`monitor_ws` summary 表中其他 node `end_dt = n/a` 屬 expected behavior(用 next-executing 推 prev_node end timestamp / stage segment 算)
+- ws fallback safety net 未實機觸發驗證(ComfyUI 8188 listen 順利時 fallback 沒走過;若 ws connect 邊角 case 撞到 raise / 補測試)
 
 ### 檔名變動史
 
 - 2026-04-29:從 `D:\tmp\submit_smoke.py`(階段 1 staging)升至 tools/(原樣 copy + docstring 路徑/檔名 update,沒 generalize logic)
 - 2026-05-03:加 ComfyUI 0.19+ subgraph unfold 邏輯 + schema-based to_api(走 backend `/object_info` INPUT_TYPES)+ `--validate-only` flag + `FRONTEND_ONLY_TYPES` 過濾;backward compat dry-run 3 條 PASS(2 flat + 1 subgraph);Wan 2.2 #3c candidate B 煙測通過(execution 217.7s,跟 wrapper 路線合一檔 baseline 14.17 min/segment 比快 3.9×)
+- 2026-05-03:加 `--ws-monitor` opt-in flag(RFC 6455 stdlib client,~200 lines patch)+ `monitor_ws()` listen executing / progress / executed events 拿 per-node + per-step timing;Wan 2.2 #3c candidate B retry 煙測 (A) strict verify 通過(HIGH s1 = 99.87s ≤ 180s threshold,1.80× speedup;total 221.21s,3.84× speedup)
 
 ---
 
