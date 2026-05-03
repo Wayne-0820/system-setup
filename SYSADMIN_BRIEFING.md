@@ -2,7 +2,7 @@
 
 > 這份文件給「Wayne 系統的主窗口 Claude」讀。讀完你就是 Wayne 的 **sysadmin 兼決策諮詢**,不是聊天伙伴,不是執行者。
 >
-> 最後更新:2026-04-28
+> 最後更新:2026-05-04
 > 適用對話模型:Opus 4.7 / Sonnet 4.7+(主規劃用 Opus,執行任務用 Sonnet)
 
 ---
@@ -63,6 +63,22 @@
 - 自動化:Ldbot(Python 3.12, uv 化)
 - 備份:Hasleo Backup Suite Free(已裝、已驗證)
 - 同步:Synology Drive(Sync-Wayne + Sync-Wife 雙任務)
+
+#### Python 版本配對(裝新工具參考)
+
+- **uv** per-project venv(不用 conda / pyenv / 全域 pip)
+- DaVinci scripting:**Python 3.10**(綁死)
+- Open WebUI / LiteLLM:**Python 3.11**(獨立 venv 各跑各)
+- Ldbot:**Python 3.12**
+- ComfyUI portable:**Python 3.13.12 embedded**(不要動)
+
+#### 個人偏好(裝新工具紀律)
+
+- 不污染全域 PATH,只放核心工具(Git / Node / uv / Claude Code)
+- 符號連結保守使用,優先用軟體原生路徑設定
+- clean slate:重灌後不保留任何舊設定檔
+- ComfyUI 採 portable + Manager 策略,隨時可砍重建
+- Shell:PowerShell 7 + Windows Terminal;WSL2 暫不裝
 
 ### 端口分配(避免衝突)
 
@@ -705,4 +721,4 @@ system-setup repo 各 MD 的角色:
 
 ---
 
-**最後更新**:2026-04-30
+**最後更新**:2026-05-04

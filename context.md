@@ -1,87 +1,15 @@
 # Context — 系統脈絡與規劃
 
 > 給 Claude / Claude Code 的單一真相來源。第一次對話時讀這份。
-> 最後更新:2026-04-26
+> 最後更新:2026-05-04
 
 ---
 
-## 硬體
+## 硬體 / 磁碟策略 / 端口配置
 
-- 筆電 ASUS ROG
-- CPU:Intel Core Ultra 9 275HX(Arrow Lake-HX, 24 cores)
-- GPU:NVIDIA RTX 5090 Laptop **24GB VRAM**(Blackwell sm_120)
-- RAM:64GB DDR5
-- C 槽:系統 Gen4 2TB
-- D 槽:工作 Gen5 2TB
-- OS:Windows 11 Pro
+詳見 `SYSADMIN_BRIEFING.md`「系統當前狀態」段(硬體規格 / 端口分配 / 環境變數)+「路徑架構規範」段(D 槽完整結構 / LLM 類模型寫死路徑例外)。
 
-**24GB VRAM 是所有 AI 決策的天花板**。同時跑大模型(qwen3:32b + Klein 9B Base 等)會爆。
-
----
-
-## 磁碟策略
-
-C 槽只放作業系統與軟體執行檔,極簡。D 槽結構:
-
-```
-D:\
-├── Work\           # Git repos 與大型生成工具
-│   ├── Ldbot\
-│   ├── ComfyUI_portable\         # ComfyUI portable 解壓位置
-│   │   └── ComfyUI_windows_portable\  # 巢狀不拍平,跟官方範例對齊
-│   ├── OpenWebUI\                # Python 3.11
-│   ├── LiteLLM\                  # Python 3.11(獨立 venv,跟 OpenWebUI 分開)
-│   ├── system-setup\             # 規劃文件 repo(本文件就在這)
-│   │   ├── comfyui-workflows\    # ComfyUI workflow JSON(中文「用途定位派」命名)
-│   │   ├── sageattention_build_notes\  # SageAttention 編譯完整紀錄
-│   │   ├── *.patched             # PyTorch patches 備份
-│   │   └── *.md                  # 各份規劃文件
-│   └── creative-pipeline\        # CrewAI 編排專案(規劃中)
-│
-├── Models\         # 模型權重
-│   ├── ollama\               # OLLAMA_MODELS 指到這
-│   └── diffusion\                   # SDXL / FLUX / Klein 系列共用(extra_model_paths.yaml 指向)
-│       ├── checkpoints\
-│       ├── diffusion_models\
-│       ├── clip\
-│       ├── vae\
-│       ├── loras\
-│       ├── controlnet\
-│       ├── upscale_models\
-│       ├── embeddings\
-│       └── clip_vision\
-│
-├── Cache\          # 軟體快取
-│   └── Resolve\              # DaVinci 快取 / 資料庫 / Gallery
-│
-├── Emulator\       # LDPlayer
-│
-├── Media\          # 影片素材、AI 生成、DaVinci 輸出(詳見 `davinci/media-structure.md`)
-│   ├── Projects\             # 當前進行中的剪輯專案
-│   ├── Archive\              # 已結案封存
-│   ├── Assets\               # 跨專案共用資源(Music / SFX / Fonts / LUTs / Logos)
-│   └── AI_Raw\               # AI 生成原始池(ComfyUI / FramePack / Voice / Music)
-│
-├── tmp\            # 編譯暫存
-│   └── SageAttention\        # source 保留(233 MB,以後重編用)
-│
-├── Sync-Wayne\     # Synology Drive(你的)
-├── Sync-Wife\      # Synology Drive(老婆的)
-├── Games\          # 遊戲
-│   ├── Steam\                # Steam Library(在 Steam 設定加入)
-│   └── Standalone\           # 官網下載的獨立遊戲
-├── Licenses\       # 軟體序號備份(DaVinci 等)
-└── Recovery\       # 重灌 manifest + Hasleo 映像相關
-```
-
-### 重要例外:LLM 類模型寫死路徑
-
-```
-D:\Work\ComfyUI_portable\ComfyUI_windows_portable\ComfyUI\models\
-└── LLavacheckpoints\         # JoyCaption / Llama(節點 hardcode 路徑,不能搬)
-```
-
-LLM 節點(如 JoyCaption)在程式碼裡寫死路徑,**不吃 `extra_model_paths.yaml`**。維持在 ComfyUI 內部。
+**24GB VRAM 是所有 AI 決策的天花板** — 同時跑大模型會爆,二選一。
 
 ---
 
@@ -92,34 +20,6 @@ LLM 節點(如 JoyCaption)在程式碼裡寫死路徑,**不吃 `extra_model_path
 3. **DaVinci 一般剪輯**(非 AI 流程)
 4. 一般生產力:Office、瀏覽器、通訊
 5. 休閒娛樂:Steam 遊戲 / 獨立遊戲(裝 D 槽)
-
----
-
-## 工具偏好(不可違反)
-
-### Python
-- **uv** per-project venv(不用 conda / pyenv / 全域 pip)
-- DaVinci scripting 綁 Python 3.10
-- Open WebUI / LiteLLM 用 3.11
-- Ldbot 用 3.12
-- ComfyUI portable 用 3.13.12 embedded(不要動)
-
-### 環境變數
-- **絕對路徑寫死**,不要用 `%VAR%`(PowerShell User scope 不展開)
-- 已設好的:`OLLAMA_MODELS`、`RESOLVE_SCRIPT_API`、`RESOLVE_SCRIPT_LIB`、`PYTHONPATH`
-
-### Secret 管理
-- API keys 走 `.env` + `.gitignore`
-- HF Token 不貼進 AI 對話框,只放 PowerShell 環境變數
-- 持久化:NAS 加密備份
-
-### 端口配置
-- **8080**:Open WebUI
-- **4000**:LiteLLM proxy
-- **11434**:Ollama
-- **8188**:ComfyUI
-
-新服務不要搶這幾個埠。
 
 ---
 
@@ -174,4 +74,4 @@ LLM 節點(如 JoyCaption)在程式碼裡寫死路徑,**不吃 `extra_model_path
 
 ---
 
-**最後更新**:2026-04-26
+**最後更新**:2026-05-04

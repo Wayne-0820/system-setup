@@ -141,15 +141,4 @@ D:\Work\system-setup\start_comfyui.bat
 
 ---
 
-## 給 Wayne 的使用說明
-
-1. 把這份範本連同 `START_HERE.md` 都放進 `D:\Work\system-setup\`
-2. 開新對話時,要 Claude 「結束時用 PROGRESS_TEMPLATE.md 的格式產報告」
-3. 報告產出後,完整複製貼給主規劃窗口
-4. 主規劃窗口會吃掉報告,輸出更新後的 MD
-5. 由 Wayne 決定何時把更新後的 MD 放回 repo + commit + push(時機、訊息、批次都是 Wayne 決策)
-6. 下一次新對話開始時,新窗口讀的 repo 已經是 Wayne 同步過的狀態
-
----
-
-**最後更新**:2026-04-27
+**最後更新**:2026-05-04

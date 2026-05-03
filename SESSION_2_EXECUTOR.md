@@ -93,7 +93,7 @@ Wayne 只貼本檔。讀完即可工作。
 
 ---
 
-## 4. 紀律(必遵 — 規則 1-10 source-of-truth 在 SYSADMIN_BRIEFING.md)
+## 4. 紀律(必遵 — 規則 1-14 source-of-truth 在 SYSADMIN_BRIEFING.md)
 
 ### 4.1 規則 9 STOP 中性紀律(訂正版)
 
@@ -110,22 +110,7 @@ STOP 上報攤候選時:
 
 ### 4.2 寫檔 SOP
 
-任何寫檔操作:
-- .NET API + 無 BOM UTF-8 + 三 byte 驗證
-- 偵測原 line ending 保留(LF / CRLF)
-- bulk 操作前先檢查 PowerShell 版本,5.1 一律 .NET API(不用 `Set-Content -Encoding UTF8` / `Out-File -Encoding utf8`,會強加 BOM)
-
-範例:
-```powershell
-$utf8NoBom = New-Object System.Text.UTF8Encoding $false
-[System.IO.File]::WriteAllText($path, $content, $utf8NoBom)
-
-# 驗證
-$bytes = [System.IO.File]::ReadAllBytes($path)
-$bytes[0..2]  # 期望不是 [239, 187, 191]
-```
-
-詳細見 SYSADMIN_BRIEFING.md 規則 2 / 5 / 7。
+詳見 user-level CLAUDE.md 硬規則 1 + SYSADMIN_BRIEFING.md 規則 2 / 5 / 7。
 
 ### 4.3 ComfyUI 跑煙測 SOP
 

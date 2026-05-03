@@ -76,7 +76,6 @@ $b = [System.IO.File]::ReadAllBytes($report)[0..2]
 ### Step 6:確認 gitignored + 提示貼回主窗口
 
 ```powershell
-cd D:\Work\system-setup
 git status
 ```
 
