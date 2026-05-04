@@ -708,6 +708,7 @@ system-setup repo 各 MD 的角色:
 | `davinci/pipeline.md` | DaVinci + AI 整合(後段) |
 | `davinci/media-structure.md` | D:\Media\ 結構 |
 | `openwebui/setup.md` | Open WebUI + LiteLLM 三個踩坑 |
+| `codex/setup.md` | OpenAI Codex 整合(plugin + 桌面板 + CLI)+ sandbox 半通踩坑 + mirror 紀律 |
 | `ldbot/checklist.md` | Ldbot 重灌前後備忘 |
 | `reinstall-manifest.md` | 重灌完整清單 |
 | `baseline-trigger.md` | baseline 觸發條件 + 完整 SOP + 還原流程 |

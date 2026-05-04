@@ -87,6 +87,7 @@ https://raw.githubusercontent.com/Wayne-0820/system-setup/main/START_HERE.md
 | 檔案 | 用途 | 何時讀 |
 |---|---|---|
 | `openwebui/setup.md` | Open WebUI + LiteLLM 多模型介面(含 3 個踩坑) | 裝 Open WebUI 時 |
+| `codex/setup.md` | OpenAI Codex 整合(plugin + 桌面板 + CLI 三件套)+ sandbox 半通踩坑 + 桌面板 mirror 紀律 | 動 Codex 前 / 撞 sandbox 時 |
 | `ldbot/checklist.md` | Ldbot 重灌前後備忘 | 重灌前 + Ldbot 重建時 |
 | `reinstall-manifest.md` | 重灌清單自動產生系統 + 踩坑庫 | **全部裝完後執行一次** |
 | `tools/README.md` | system-setup 周邊腳本工具清單(目前含 png_to_ico.py) | 寫新工具腳本前對照規範 |
@@ -121,6 +122,9 @@ system-setup/
 ├── tools/                            # 周邊腳本(Python 小工具)
 │   ├── README.md                     # 工具清單 + 用法
 │   └── png_to_ico.py                 # PNG → 多尺寸 ICO(內建亮度閾值去背)
+│
+├── codex/                            # OpenAI Codex 整合(plugin + 桌面板 + CLI)
+│   └── setup.md                      # 三件套配置 + sandbox 半通踩坑 + 桌面板 mirror 紀律
 │
 └── sageattention_build_notes/
     └── BUILD_NOTES.md                # 9 次嘗試的完整失敗 / 解法紀錄
