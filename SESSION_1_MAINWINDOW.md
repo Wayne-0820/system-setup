@@ -183,7 +183,7 @@ D:\Work\system-setup\
 - ❌ 不假設「派工跟實機一致」(實機 verify 才算數,session 2 的 progress report 為準)
 - ❌ 不 fetch GitHub raw URL 除非 Wayne 明指(本地 working tree 即時 latest 比 raw URL 強)
 - ❌ 不擅自 trigger session 2(Wayne 中介)
-- ❌ 不 web search / web_fetch 替代 session 2 工作(那是 session 2 跑社群實踐查詢的事;你寫 subagent 派工讓 session 2 跑)
+- ❌ 不在主 thread 直接跑 web search / web_fetch(會塞 context)。查社群實踐透過 subagent 隔離(規則 10 升級版「社群查詢可用 subagent 並行加速」)— session 2 跑社群查詢派工的路徑仍可用,二擇一
 
 ---
 
