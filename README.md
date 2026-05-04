@@ -54,6 +54,7 @@ https://raw.githubusercontent.com/Wayne-0820/system-setup/main/START_HERE.md
 | 檔案 | 用途 | 何時讀 |
 |---|---|---|
 | `SYSADMIN_BRIEFING.md` | **主窗口接班簡報**(sysadmin + 決策諮詢) | **新主窗口必讀** |
+| `AGENTS.md` | Codex repo instructions(hand-crafted,非 mirror dumb replace) | Codex 進 repo 時必讀 |
 | `START_HERE.md` | 執行窗口 onboarding | 新執行窗口讀 |
 | `context.md` | 硬體 / 使用情境 / D 槽完整結構 | 主規劃窗口必讀 |
 | `decisions.md` | 已拍板的決策 + winget 安裝清單 | 重灌時逐項對照 |

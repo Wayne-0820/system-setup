@@ -413,7 +413,14 @@ repo 內檔案編碼**一律無 BOM**,bulk 操作前先檢查 PowerShell 版本,
 1. 執行窗口寫入 `progress-reports/`
 2. Wayne 把 report 內容貼回主窗口
 3. 主窗口整合進對應 MD(`setup.md` / `local-models.md` / `conflicts.md` 等)
-4. Wayne commit 整合後的 MD,**刪掉 `progress-reports/` 下那份 report 檔**
+4. 主窗口完成整合 commit / push
+5. 主窗口覆蓋並 commit / push 最新 `session1-snapshot.md` 後,可清理 `progress-reports/*.md` 舊 raw reports(保留 `progress-reports/README.md`)
+
+**清理防呆**:
+
+- 只刪 `progress-reports/*.md`,不刪 `progress-reports/README.md`
+- 若仍有未整合 / 未拍板 / 未 commit 的 report,**STOP 不刪**
+- 若不確定某份 report 是否已整合,**STOP 問 Wayne**
 
 **為什麼整個目錄 gitignore**(`progress-reports/*` + `!progress-reports/README.md` 例外):
 
@@ -693,6 +700,7 @@ system-setup repo 各 MD 的角色:
 | 檔案 | 你需要讀的時機 |
 |---|---|
 | `README.md` | 文件索引,開頭看一下知道有什麼 |
+| `AGENTS.md` | Codex repo instructions(hand-crafted,非 mirror dumb replace) |
 | `START_HERE.md` | 執行窗口讀,你不太需要 |
 | `PROGRESS_TEMPLATE.md` | 派工給執行窗口時提醒它用這個格式 |
 | `context.md` | 跟本 brief 有重複,但 context 更廣 |

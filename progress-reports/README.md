@@ -37,10 +37,19 @@ Wayne 把 report 內容貼回主窗口
 主窗口整合進對應 MD
    (comfyui/setup.md / ai-models/local-models.md / comfyui/conflicts.md 等)
    ↓
-Wayne commit 整合後的 MD
+主窗口完成整合 commit / push
    ↓
-Wayne 刪 progress-reports/<file>.md(已被分流,留著反而散)
+主窗口覆蓋並 commit / push 最新 session1-snapshot.md
+   ↓
+session1 可清理 progress-reports/*.md 舊 raw reports
+(保留 progress-reports/README.md)
 ```
+
+清理防呆:
+
+- 只刪 `progress-reports/*.md`,不刪 `progress-reports/README.md`
+- 若仍有未整合 / 未拍板 / 未 commit 的 report,**STOP 不刪**
+- 若不確定某份 report 是否已整合,**STOP 問 Wayne**
 
 ---
 
