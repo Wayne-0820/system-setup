@@ -147,7 +147,15 @@ companion script
 
 未達成:repo review agent inspect。
 
-不要把這寫成「review 完整可用」。詳情看 `codex/setup.md` 踩坑 #1。
+不要把 `/codex:review` slash command 寫成「review 完整可用」。詳情看 `codex/setup.md` 踩坑 #1。
+
+已實測可用替代路徑(2026-05-05,`codex-cli 0.128.0`):在終端機直接呼叫本機 Codex CLI full-access review:
+
+```powershell
+codex -s danger-full-access -a never review --commit HEAD
+```
+
+語意:`--commit HEAD` review 最新 commit diff(`HEAD^..HEAD`),不是整 repo / working tree。`-s danger-full-access -a never` 是全域參數,必須放在 `codex` 後、`review` 前。session 1 可把此命令寫進 commit / snapshot / 規則文件 review 派工;review finding 是給 Claude 的第二視角 / 導正訊號。session 2 可修派工範圍內明確 actionable finding;超出派工範圍 / 牽涉決策才 STOP。Wayne 若說停止 Codex review 自動出現,之後必須等 Wayne 再次明確呼喊「Codex review」才恢復作動。
 
 ### 4. `/goal` feature
 

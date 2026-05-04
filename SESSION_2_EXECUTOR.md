@@ -153,6 +153,22 @@ STOP 上報攤候選時:
 - **push 前不 STOP**(2026-05-03 永久訂正):Wayne 事前 ack commit 派工的拆批 + message 草稿即實質過目;push 前 procedural redundancy 取消。session 2 commit + push 連續跑,寫 progress report 收尾
 - 不替主視窗草擬 commit message(派工內主視窗會給草稿)
 
+### 4.7 Codex review 執行路徑
+
+派工若明列 Codex review,用本機 Codex CLI full-access 路徑,不要改用 `/codex:review` slash command:
+
+```powershell
+codex -s danger-full-access -a never review --commit HEAD
+```
+
+語意:
+- `--commit HEAD` review 最新 commit diff(`HEAD^..HEAD`),不是整 repo / working tree。
+- `-s danger-full-access -a never` 是 Codex CLI 全域參數,必須放在 `codex` 後、`review` 前;這是 Wayne Windows 環境目前實測可避開 sandbox spawn error 的路徑。
+- review output 是給 Claude 的第二視角 / 導正訊號。派工範圍內明確 actionable finding 可直接修並跑必要 verify;超出派工範圍 / 牽涉決策 / 需要新增拆批才 STOP。
+- progress report 避免貼長篇 review 摘要以省 token:只寫「無 actionable finding」或「Codex review 指出 X,已修 Y / STOP 原因 Z」。
+- plugin sync 403 / skill icon warning 若不影響 review 完成,列為 non-fatal warning。
+- 若 Wayne 已在當輪或 handoff 中說「停止自動出現 Codex review」或同義指令,但派工仍自動列出 Codex review step,視為派工狀態不一致:STOP 上報,等 Wayne / session 1 明確確認;除非 Wayne 再次明確呼喊「Codex review」。
+
 ---
 
 ## 5. 跨 session 通訊機制
@@ -180,6 +196,7 @@ Wayne 通知你「讀 assignments/<檔>」,你跑 commit:
 4. `git log --stat -1`(record 進 progress report)
 5. `git push origin main`(直接,不 STOP — 2026-05-03 永久訂正,Wayne 事前 ack commit 派工即實質過目)
 6. `git status` 確認 working tree clean + branch up-to-date
+7. 若派工明列 Codex review step,跑 `codex -s danger-full-access -a never review --commit HEAD`;派工範圍內明確 finding 可直接修,progress report 只記結論 / 修正 / STOP 原因,不貼長篇摘要。
 
 ---
 
