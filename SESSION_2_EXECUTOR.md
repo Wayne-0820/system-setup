@@ -41,6 +41,8 @@ Wayne 只貼本檔。讀完即可工作。
 ❌ **不讀 `progress-reports\session1-snapshot.md`**(那是 session 1 主視窗用的接班 anchor,讀了反而干擾規則 9 中性紀律)
 ❌ **不讀 `SYSADMIN_BRIEFING.md` 全文**(派工自帶必讀就夠;若派工要你讀某段會明寫)
 
+✅ **例外:派工明確指定要 patch 的檔可最小化 Read**(派工 §決策已定 / §限制 / §目標 列為 patch 對象的檔):Edit 工具前置 requirement = 必須先 Read 該檔,為滿足前置可 Read 指定 patch 區段,不擴及全檔
+
 ---
 
 ## 3. 跑派工 SOP

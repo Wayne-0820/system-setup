@@ -97,6 +97,8 @@
 
 ## STOP 觸發條件
 
+> **除 §決策已定 排除項以外** — §決策已定 寫的「不做 X」是硬限制,執行端不會走到該分支,不需在 STOP 重列。違反 §決策已定 算嚴重事件 STOP 上報,但「不做 X」本身不寫成 STOP 條件。
+
 - [列出需要回報主視窗做決策的情境,執行端遇到 → 上報不繼續]
 
 範例(規則 11:STOP 只列需主視窗 / Wayne 介入的事,執行端可自處的不寫):
@@ -145,6 +147,7 @@
 9. **§限制 SHA256 校驗清單 mirror candidate JSON 全 widget**(規則 14):派工撰寫前 grep candidate JSON 列全部 model / file loader widget,不只「主模型 + LoRA」直觀
 10. **派工撰寫前 audit candidate JSON 結構**:grep `definitions.subgraphs` 檢測 ComfyUI 0.19 subgraph,確認 `tools/workflow_submit.py` 兼容性
 11. **派工檔名日期語意 = 實機執行當天**(規則 15):派工檔名 `<YYYY-MM-DD>` = session 2 執行當天本地系統日期;跨日場景由 session 2 step 1.5 verify + rename 派工檔對齊
+12. **§參考文件 不列 `progress-reports/session1-snapshot.md`**:該檔是 session 1 主視窗 handoff anchor,session 2 ❌ 邊界明列不讀(SESSION_2_EXECUTOR.md §2),派工列入會違反 session 2 紀律
 
 ---
 
