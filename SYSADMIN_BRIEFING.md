@@ -693,6 +693,56 @@ if ($today -ne $assignDate) {
 
 ---
 
+## WSL 跨 9P 操作 D 槽 git 教訓
+
+WSL2 跨 9P 操作 Windows D 槽的 git repo,從 0 開始建一條乾淨的工作流要過三關。任何一關沒處理就會撞坑。三條都做完才算 WSL ↔ D 槽 git 工作流就緒。
+
+### 1. .gitattributes 強制 LF
+
+- 症狀:bash script 跑出 `bad interpreter: /bin/bash^M`
+- 原因:Windows git 預設 `core.autocrlf=true`,clone/pull 時 LF→CRLF
+- 解法:每個 cross-platform repo 加 `.gitattributes`:
+
+```
+* text=auto eol=lf
+*.sh        text eol=lf
+*.md        text eol=lf
+*.yaml      text eol=lf
+*.yml       text eol=lf
+```
+
+- 不要靠 user 端 `core.autocrlf=false`,設定不會跟 repo 走
+
+### 2. safe.directory 白名單
+
+- 症狀:`fatal: detected dubious ownership in repository`
+- 原因:CVE-2022-24765 安全檢查,跨 9P 看到 owner UID 對不起來
+- 解法:`git config --global --add safe.directory <絕對路徑>`
+- 不要用 `*` wildcard,範圍越窄越好(避免掩蓋真實 ownership 攻擊)
+
+### 3. /etc/wsl.conf 加 metadata mount option
+
+- 症狀:`error: chmod on .git/config.lock failed: Operation not permitted`
+- 原因:WSL 對 DrvFs 預設無 metadata,chmod silent fail
+- 解法:`/etc/wsl.conf` 加:
+
+```
+[automount]
+options="metadata,umask=22,fmask=11"
+```
+
+- 改完必須在 PowerShell(不是 WSL 內)跑 `wsl --shutdown` 才生效
+
+### 影響範圍
+
+這個三件套對既有 `D:\Work\system-setup\` 跟 `D:\Work\Ldbot\` 也適用。之前沒踩到是因為主要在 Windows 端跑 git,沒從 WSL 操作。未來若要從 WSL 跑 git push 這兩個 repo,先把這三件套確保已配置。
+
+### 來源
+
+2026-05-08 hermes-setup 建置過程實證(獨立 sibling repo,本 repo 不留指針)。
+
+---
+
 ## 文件導航
 
 system-setup repo 各 MD 的角色:
