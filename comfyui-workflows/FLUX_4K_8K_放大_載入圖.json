@@ -1,0 +1,383 @@
+{
+  "last_node_id": 19,
+  "last_link_id": 20,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "LoadImage",
+      "pos": [-1600, 200],
+      "size": [320, 400],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [1] },
+        { "name": "MASK", "type": "MASK", "links": [] }
+      ],
+      "properties": { "Node name for S&R": "LoadImage" },
+      "widgets_values": ["", "image"]
+    },
+    {
+      "id": 2,
+      "type": "UpscaleModelLoader",
+      "pos": [-1600, 660],
+      "size": [320, 60],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "UPSCALE_MODEL", "type": "UPSCALE_MODEL", "links": [2, 16] }
+      ],
+      "properties": { "Node name for S&R": "UpscaleModelLoader" },
+      "widgets_values": ["4x-UltraSharp.pth"]
+    },
+    {
+      "id": 3,
+      "type": "ImageUpscaleWithModel",
+      "pos": [-1220, 200],
+      "size": [260, 80],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        { "name": "upscale_model", "type": "UPSCALE_MODEL", "link": 2 },
+        { "name": "image", "type": "IMAGE", "link": 1 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [3] }
+      ],
+      "properties": { "Node name for S&R": "ImageUpscaleWithModel" },
+      "widgets_values": []
+    },
+    {
+      "id": 4,
+      "type": "ImageScaleToTotalPixels",
+      "pos": [-920, 200],
+      "size": [260, 90],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        { "name": "image", "type": "IMAGE", "link": 3 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [4] }
+      ],
+      "title": "Refine cap (~2MP, 24GB safe)",
+      "properties": { "Node name for S&R": "ImageScaleToTotalPixels" },
+      "widgets_values": ["lanczos", 2.0]
+    },
+    {
+      "id": 5,
+      "type": "VAELoader",
+      "pos": [-1600, 780],
+      "size": [320, 60],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "VAE", "type": "VAE", "links": [5, 14] }
+      ],
+      "properties": { "Node name for S&R": "VAELoader" },
+      "widgets_values": ["ae.safetensors"]
+    },
+    {
+      "id": 6,
+      "type": "VAEEncode",
+      "pos": [-600, 200],
+      "size": [200, 80],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        { "name": "pixels", "type": "IMAGE", "link": 4 },
+        { "name": "vae", "type": "VAE", "link": 5 }
+      ],
+      "outputs": [
+        { "name": "LATENT", "type": "LATENT", "links": [6] }
+      ],
+      "properties": { "Node name for S&R": "VAEEncode" },
+      "widgets_values": []
+    },
+    {
+      "id": 7,
+      "type": "UNETLoader",
+      "pos": [-600, 340],
+      "size": [320, 90],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "MODEL", "type": "MODEL", "links": [7] }
+      ],
+      "properties": { "Node name for S&R": "UNETLoader" },
+      "widgets_values": ["flux1-dev.safetensors", "fp8_e4m3fn"]
+    },
+    {
+      "id": 8,
+      "type": "DualCLIPLoader",
+      "pos": [-600, 480],
+      "size": [320, 130],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        { "name": "CLIP", "type": "CLIP", "links": [8] }
+      ],
+      "properties": { "Node name for S&R": "DualCLIPLoader" },
+      "widgets_values": ["clip_l.safetensors", "t5xxl_fp8_e4m3fn.safetensors", "flux", "default"]
+    },
+    {
+      "id": 9,
+      "type": "CLIPTextEncode",
+      "pos": [-240, 480],
+      "size": [340, 150],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        { "name": "clip", "type": "CLIP", "link": 8 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [9] }
+      ],
+      "title": "Detail prompt",
+      "properties": { "Node name for S&R": "CLIPTextEncode" },
+      "widgets_values": ["high resolution, ultra detailed, sharp focus, fine texture, intricate details"],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 10,
+      "type": "FluxGuidance",
+      "pos": [140, 480],
+      "size": [200, 60],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        { "name": "conditioning", "type": "CONDITIONING", "link": 9 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [10, 11] }
+      ],
+      "properties": { "Node name for S&R": "FluxGuidance" },
+      "widgets_values": [3.5]
+    },
+    {
+      "id": 11,
+      "type": "ConditioningZeroOut",
+      "pos": [140, 600],
+      "size": [200, 40],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        { "name": "conditioning", "type": "CONDITIONING", "link": 11 }
+      ],
+      "outputs": [
+        { "name": "CONDITIONING", "type": "CONDITIONING", "links": [12] }
+      ],
+      "properties": { "Node name for S&R": "ConditioningZeroOut" },
+      "widgets_values": []
+    },
+    {
+      "id": 12,
+      "type": "KSampler",
+      "pos": [400, 200],
+      "size": [300, 260],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        { "name": "model", "type": "MODEL", "link": 7 },
+        { "name": "positive", "type": "CONDITIONING", "link": 10 },
+        { "name": "negative", "type": "CONDITIONING", "link": 12 },
+        { "name": "latent_image", "type": "LATENT", "link": 6 }
+      ],
+      "outputs": [
+        { "name": "LATENT", "type": "LATENT", "links": [13] }
+      ],
+      "title": "Refine (denoise 0.35)",
+      "properties": { "Node name for S&R": "KSampler" },
+      "widgets_values": [123456789, "randomize", 20, 1.0, "euler", "simple", 0.35]
+    },
+    {
+      "id": 13,
+      "type": "VAEDecode",
+      "pos": [760, 200],
+      "size": [200, 80],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        { "name": "samples", "type": "LATENT", "link": 13 },
+        { "name": "vae", "type": "VAE", "link": 14 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [15] }
+      ],
+      "properties": { "Node name for S&R": "VAEDecode" },
+      "widgets_values": []
+    },
+    {
+      "id": 14,
+      "type": "ImageUpscaleWithModel",
+      "pos": [1020, 200],
+      "size": [260, 80],
+      "flags": {},
+      "order": 15,
+      "mode": 0,
+      "inputs": [
+        { "name": "upscale_model", "type": "UPSCALE_MODEL", "link": 16 },
+        { "name": "image", "type": "IMAGE", "link": 15 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [17, 18] }
+      ],
+      "title": "Final 4x upscale",
+      "properties": { "Node name for S&R": "ImageUpscaleWithModel" },
+      "widgets_values": []
+    },
+    {
+      "id": 15,
+      "type": "ImageScaleToTotalPixels",
+      "pos": [1340, 120],
+      "size": [260, 90],
+      "flags": {},
+      "order": 16,
+      "mode": 0,
+      "inputs": [
+        { "name": "image", "type": "IMAGE", "link": 17 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [19] }
+      ],
+      "title": "Scale to 8K (33.18 MP)",
+      "properties": { "Node name for S&R": "ImageScaleToTotalPixels" },
+      "widgets_values": ["lanczos", 33.18]
+    },
+    {
+      "id": 16,
+      "type": "SaveImage",
+      "pos": [1660, 120],
+      "size": [400, 450],
+      "flags": {},
+      "order": 18,
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE", "link": 19 }
+      ],
+      "outputs": [],
+      "title": "Save 8K",
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["upscale_8K"]
+    },
+    {
+      "id": 17,
+      "type": "ImageScaleToTotalPixels",
+      "pos": [1340, 640],
+      "size": [260, 90],
+      "flags": {},
+      "order": 17,
+      "mode": 0,
+      "inputs": [
+        { "name": "image", "type": "IMAGE", "link": 18 }
+      ],
+      "outputs": [
+        { "name": "IMAGE", "type": "IMAGE", "links": [20] }
+      ],
+      "title": "Scale to 4K (8.29 MP)",
+      "properties": { "Node name for S&R": "ImageScaleToTotalPixels" },
+      "widgets_values": ["lanczos", 8.29]
+    },
+    {
+      "id": 18,
+      "type": "SaveImage",
+      "pos": [1660, 640],
+      "size": [400, 450],
+      "flags": {},
+      "order": 19,
+      "mode": 0,
+      "inputs": [
+        { "name": "images", "type": "IMAGE", "link": 20 }
+      ],
+      "outputs": [],
+      "title": "Save 4K",
+      "properties": { "Node name for S&R": "SaveImage" },
+      "widgets_values": ["upscale_4K"]
+    },
+    {
+      "id": 19,
+      "type": "MarkdownNote",
+      "pos": [-1600, 880],
+      "size": [560, 360],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Usage",
+      "properties": {},
+      "widgets_values": ["# FLUX 4K / 8K Hi-res Upscaler (load image)\n\n**Flow:** LoadImage -> 4x model upscale -> downscale to ~2MP (24GB-safe) -> FLUX img2img refine (denoise 0.35, adds real detail) -> final 4x model upscale -> exact 4K & 8K outputs.\n\n**Outputs:** `upscale_8K` (~33MP) and `upscale_4K` (~8.3MP). Mute the branch you don't need with Ctrl+B (select node 15+16 for 8K, or 17+18 for 4K).\n\n**Tuning:**\n- KSampler denoise 0.25-0.45 (higher = more invented detail, less faithful to source).\n- Swap UpscaleModelLoader to `RealESRGAN_x4plus.pth` for photos; `4x-UltraSharp.pth` is crisper for art/illustration.\n- FluxGuidance 2.5-3.5.\n- 8K refine is NOT done at full res (VRAM); refine runs at ~2MP, final 8K is a sharp lanczos resize of the 4x output. For true 8K-native detail use a tiled upscaler (Ultimate SD Upscale).\n\n**Models used:** flux1-dev.safetensors (fp8_e4m3fn) + clip_l + t5xxl_fp8_e4m3fn + ae.safetensors."],
+      "color": "#222",
+      "bgcolor": "#000"
+    }
+  ],
+  "links": [
+    [1, 1, 0, 3, 1, "IMAGE"],
+    [2, 2, 0, 3, 0, "UPSCALE_MODEL"],
+    [3, 3, 0, 4, 0, "IMAGE"],
+    [4, 4, 0, 6, 0, "IMAGE"],
+    [5, 5, 0, 6, 1, "VAE"],
+    [6, 6, 0, 12, 3, "LATENT"],
+    [7, 7, 0, 12, 0, "MODEL"],
+    [8, 8, 0, 9, 0, "CLIP"],
+    [9, 9, 0, 10, 0, "CONDITIONING"],
+    [10, 10, 0, 12, 1, "CONDITIONING"],
+    [11, 10, 0, 11, 0, "CONDITIONING"],
+    [12, 11, 0, 12, 2, "CONDITIONING"],
+    [13, 12, 0, 13, 0, "LATENT"],
+    [14, 5, 0, 13, 1, "VAE"],
+    [15, 13, 0, 14, 1, "IMAGE"],
+    [16, 2, 0, 14, 0, "UPSCALE_MODEL"],
+    [17, 14, 0, 15, 0, "IMAGE"],
+    [18, 14, 0, 17, 0, "IMAGE"],
+    [19, 15, 0, 16, 0, "IMAGE"],
+    [20, 17, 0, 18, 0, "IMAGE"]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "1. Load + pre-upscale",
+      "bounding": [-1620, 130, 700, 620],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "2. FLUX hi-res refine",
+      "bounding": [-620, 130, 1600, 540],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 3,
+      "title": "3. Final 4K / 8K output",
+      "bounding": [1000, 40, 1080, 1080],
+      "color": "#3f789e",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {},
+  "version": 0.4
+}
