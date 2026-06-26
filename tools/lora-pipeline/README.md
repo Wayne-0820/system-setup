@@ -15,9 +15,10 @@
 tools\lora-pipeline\
 ├── comfy_common.py      # 共用水管:送單 / 輪詢 / reference staging(stdlib only)
 ├── sdxl_bootstrap.py    # 路線1:SDXL IPAdapter bootstrap(純 SDXL,無 arch 分支)
-├── flux_kontext.py      # 路線2:Flux/Kontext —— 之後做
+├── flux_kontext.py      # 路線2:Flux Kontext(in-context 編輯,native 保身份)
 ├── make_contactsheet.py # 共用工具:出圖夾組帶編號聯絡表(需 Pillow)
-├── config.sdxl.json     # SDXL 路線的全部旋鈕(純 ASCII)
+├── config.sdxl.json     # 路線1 旋鈕(純 ASCII)
+├── config.flux.json     # 路線2 旋鈕(純 ASCII)
 └── README.md            # 本檔
 ```
 
@@ -54,9 +55,27 @@ D:\Work\ComfyUI_portable\ComfyUI_windows_portable\python_embeded\python.exe make
 
 ---
 
-## 之後做 Flux/Kontext 路線(`flux_kontext.py`)
+## 用法(Flux Kontext 路線)
 
-另開一支、import 同一個 `comfy_common.py`。重點:Kontext 是 in-context 編輯、native 保身份、**不靠 IPAdapter**;graph、prompt 形式、打標都跟 SDXL 不同 —— 所以是獨立腳本而非 SDXL 的分支。屆時配 `config.flux.json`。
+前提:ComfyUI 已啟動、Kontext 模型就位(`flux1-dev-kontext_fp8_scaled` + `clip_l` + `t5xxl_fp8_e4m3fn` + `ae.safetensors`)。Flux 12B,比 SDXL 慢 ~3 倍、吃 VRAM 緊。
+
+```
+# 冒煙測試
+python flux_kontext.py --config config.flux.json --limit 1 --wait
+
+# 跑整個矩陣
+python flux_kontext.py --config config.flux.json --wait
+```
+
+重點:Kontext 是 **in-context 編輯**、native 保住參考圖的主體身份(**不靠 IPAdapter**),所以保的是**原始參考那個男孩**(不像 SDXL route 會因 prompt 漂移)。
+
+config 旋鈕(`config.flux.json`):
+- **`models.unet / clip_l / clip_t5 / vae`** — 全可變動(換別的 Flux/Kontext 模型直接改)。
+- **`kontext.guidance`** — FluxGuidance,2.5 起手(調高更貼指令、調低更自由)。
+- **`canvas.mode`** — `reference`(預設,強保留、框構接近參考)/ `empty`(配 width/height,框構自由度高 → 想要全身/大幅換姿勢時用,是變化槓桿)。
+- **`prompt.instruction_template` + `variations`** — **自然語言編輯指令**(不是 booru tag)。`{variation}` 會被每條 variation 取代。
+
+> 取捨:Kontext 身份保持最強,但「從胸上半身參考生全身/大幅換姿勢」的自由度可能不如 SDXL route;`canvas: empty` + 指令明寫 full body 是槓桿,實測為準。
 
 ---
 

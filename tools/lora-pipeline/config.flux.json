@@ -1,0 +1,58 @@
+{
+  "arch": "flux-kontext",
+  "comfyui_url": "http://127.0.0.1:8188",
+  "comfyui_input_dir": "D:\\Work\\ComfyUI_portable\\ComfyUI_windows_portable\\ComfyUI\\input",
+
+  "models": {
+    "unet": "flux1-dev-kontext_fp8_scaled.safetensors",
+    "clip_l": "clip_l.safetensors",
+    "clip_t5": "t5xxl_fp8_e4m3fn.safetensors",
+    "vae": "ae.safetensors",
+    "weight_dtype": "default"
+  },
+
+  "kontext": {
+    "guidance": 2.5
+  },
+
+  "sampler": {
+    "sampler_name": "euler",
+    "scheduler": "simple",
+    "steps": 20,
+    "cfg": 1.0,
+    "denoise": 1.0
+  },
+
+  "canvas": {
+    "mode": "reference",
+    "width": 832,
+    "height": 1216
+  },
+
+  "reference_image": "D:\\Media\\AI_Raw\\ComfyUI_Output\\SDXL__00015_.png",
+  "output_prefix": "charkontext/img",
+  "seeds_per_prompt": 2,
+  "seed_base": 7000,
+
+  "prompt": {
+    "instruction_template": "Keep the exact same boy: identical face, hairstyle, and white hooded sweatshirt, same anime art style. {variation}",
+    "variations": [
+      "Full body shot, standing in a forest clearing, looking at the viewer",
+      "Full body, walking down a city street, side view",
+      "Sitting on a park bench, reading a book, full body",
+      "Full body, running, dynamic action pose",
+      "Upper body portrait, looking away, serious expression",
+      "Close-up portrait of his face, neutral expression",
+      "Full body, leaning against a brick wall, hands in pockets",
+      "Sitting on stone steps, elbow on knee, thinking, full body",
+      "Full body, jumping in mid-air, dynamic pose",
+      "Standing on a rooftop at sunset, looking at the city, full body",
+      "Full body, back view, walking away into the distance",
+      "Crouching down petting a cat in a garden, full body",
+      "Upper body, arms crossed, confident, indoor background",
+      "Full body, standing in the rain holding an umbrella",
+      "Profile view of his face, looking to the left",
+      "Full body, sitting cross-legged on the floor, relaxed"
+    ]
+  }
+}
