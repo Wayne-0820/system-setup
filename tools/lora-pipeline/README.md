@@ -16,9 +16,11 @@ tools\lora-pipeline\
 ├── comfy_common.py      # 共用水管:送單 / 輪詢 / reference staging(stdlib only)
 ├── sdxl_bootstrap.py    # 路線1:SDXL IPAdapter bootstrap(純 SDXL,無 arch 分支)
 ├── flux_kontext.py      # 路線2:Flux Kontext(in-context 編輯,native 保身份)
+├── tag_wd14.py          # 打標:WD14 onnx -> Danbooru caption(standalone,不驅動 ComfyUI)
 ├── make_contactsheet.py # 共用工具:出圖夾組帶編號聯絡表(需 Pillow)
 ├── config.sdxl.json     # 路線1 旋鈕(純 ASCII)
 ├── config.flux.json     # 路線2 旋鈕(純 ASCII)
+├── config.tagger.json   # 打標旋鈕(純 ASCII)
 └── README.md            # 本檔
 ```
 
@@ -76,6 +78,30 @@ config 旋鈕(`config.flux.json`):
 - **`prompt.instruction_template` + `variations`** — **自然語言編輯指令**(不是 booru tag)。`{variation}` 會被每條 variation 取代。
 
 > 取捨:Kontext 身份保持最強,但「從胸上半身參考生全身/大幅換姿勢」的自由度可能不如 SDXL route;`canvas: empty` + 指令明寫 full body 是槓桿,實測為準。
+
+---
+
+## 打標(WD14 -> caption)
+
+生成 + 篩好資料集後,對那個資料夾跑 WD14 tagger 產 Danbooru 標籤 caption(訓練用)。**standalone,不驅動 ComfyUI** —— 用 embedded python 已有的 onnxruntime 跑 onnx,只共用 `comfy_common.load_config`。首次自動下載 tagger 模型(~1.2GB,公開免 token)。
+
+```
+# 先在 config.tagger.json 設 dataset_dir + trigger_word + strip_tags,再批量打標
+D:\Work\ComfyUI_portable\ComfyUI_windows_portable\python_embeded\python.exe tag_wd14.py --config config.tagger.json
+
+# 單張試打(只印不寫檔)
+... tag_wd14.py --config config.tagger.json --smoke <one_image>
+```
+
+每張圖寫同名 `.txt`:`<trigger_word>, <tags...>`。
+
+config 旋鈕(`config.tagger.json`):
+- **`tagger.model_repo`** — 預設 `SmilingWolf/wd-eva02-large-tagger-v3`(最準);要快/小可換 `wd-v1-4-moat-tagger-v2`。
+- **`tagger.general_threshold` / `character_threshold`** — 標籤門檻(0.35 / 0.85 起手)。
+- **`trigger_word`** — 每張 caption 開頭的罕見觸發詞。
+- **`strip_tags`** — 要烤進 trigger 的**身份外觀**標籤(髮色/瞳色/髮型);結構標籤(`1boy`/`solo`)留著別 strip。
+
+> 註:onnxruntime 的 CUDA provider 需 CUDA 12.x/cuDNN9;本機 CUDA 13 不合會自動退 CPU(一次性打標夠用)。
 
 ---
 

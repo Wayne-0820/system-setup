@@ -1,0 +1,22 @@
+{
+  "tagger": {
+    "model_repo": "SmilingWolf/wd-eva02-large-tagger-v3",
+    "model_dir": "D:\\Models\\wd14\\wd-eva02-large-tagger-v3",
+    "general_threshold": 0.35,
+    "character_threshold": 0.85,
+    "include_rating": false
+  },
+
+  "dataset_dir": "",
+  "image_exts": [".png", ".jpg", ".jpeg", ".webp", ".bmp"],
+
+  "trigger_word": "wnboy",
+  "underscores_to_spaces": true,
+  "sort_by_confidence": true,
+  "overwrite_existing": true,
+
+  "strip_tags": [
+    "black hair", "brown hair", "spiky hair", "messy hair", "short hair",
+    "brown eyes", "black eyes"
+  ]
+}
