@@ -1,0 +1,96 @@
+{
+  "arch": "sdxl",
+  "comfyui_url": "http://127.0.0.1:8188",
+  "comfyui_input_dir": "D:\\Work\\ComfyUI_portable\\ComfyUI_windows_portable\\ComfyUI\\input",
+
+  "models": {
+    "checkpoint": "waiIllustriousSDXL_v140.safetensors",
+    "vae": "",
+    "ipadapter_preset": "PLUS (high strength)"
+  },
+
+  "ipadapter": {
+    "weight": 0.5,
+    "weight_type": "style and composition",
+    "embeds_scaling": "V only",
+    "combine_embeds": "concat",
+    "start_at": 0.0,
+    "end_at": 1.0
+  },
+
+  "sampler": {
+    "sampler_name": "dpmpp_2m_sde_gpu",
+    "scheduler": "karras",
+    "cfg": 5.5,
+    "steps": 28,
+    "width": 832,
+    "height": 1216,
+    "denoise": 1.0
+  },
+
+  "reference_image": "D:\\Media\\AI_Raw\\ComfyUI_Output\\SDXL__00015_.png",
+  "output_prefix": "charlora_batch/img",
+  "seeds_per_prompt": 2,
+  "seed_base": 5000,
+
+  "prompt": {
+    "id_core": "masterpiece, best quality, very aesthetic, absurdres, 1boy, solo, male focus, teenage boy, 17 years old, tall, slender, spiky black hair, messy hair, brown eyes, sharp eyes, defined jawline, handsome",
+    "negative": "worst quality, low quality, bad anatomy, bad hands, bad proportions, extra digits, fewer digits, text, watermark, signature, blurry, multiple views, multiple people, 2boys, 1girl, car, vehicle, cigarette, smoking, chibi, child, baby face, toddler, shota",
+    "outfits": [
+      "white hoodie",
+      "white hoodie",
+      "white hoodie",
+      "school uniform, blazer",
+      "black t-shirt, open jacket",
+      "grey hoodie, jeans"
+    ],
+    "scenes": [
+      "simple background, white background",
+      "plain grey background",
+      "city street, daytime, depth of field",
+      "school classroom interior",
+      "rooftop, blue sky, clouds",
+      "park, green trees, sunlight",
+      "night city street, neon lights",
+      "cozy cafe interior",
+      "forest path, dappled light",
+      "bedroom interior, soft light",
+      "outdoor, sunset, golden hour",
+      "snowy street, winter"
+    ],
+    "poses": [
+      "full body, standing, hands in pockets, front view, looking at viewer",
+      "full body, standing, arms crossed, 3/4 view, serious",
+      "full body, walking, dynamic, side view, looking away",
+      "full body, running, action pose, dynamic angle",
+      "full body, sitting on the ground, knees up, from side",
+      "full body, sitting on a bench, relaxed, front view, slight smile",
+      "full body, leaning against a wall, hands in pockets, 3/4 view",
+      "full body, jumping, mid-air, dynamic pose",
+      "upper body, looking at viewer, front view, neutral expression",
+      "upper body, looking away, 3/4 view, serious",
+      "upper body, hand on own neck, slight smile",
+      "cowboy shot, hands in pockets, from below, confident",
+      "cowboy shot, turning around, looking back, from behind, back view",
+      "close-up, portrait, face focus, serious, looking at viewer",
+      "close-up, portrait, slight smile, looking at viewer",
+      "from behind, full body, walking away, back view",
+      "full body, crouching, from above, looking up",
+      "upper body, arms raised, stretching, eyes closed",
+      "full body, hands on hips, confident pose, front view",
+      "full body, casual standing, looking up at sky",
+      "full body, hand reaching out, dynamic angle, determined",
+      "upper body, hands in pockets, smirk, 3/4 view",
+      "full body, sitting on steps, elbow on knee, thinking",
+      "cowboy shot, holding a bag over shoulder, walking, side view",
+      "full body, standing in the rain, looking down, melancholic",
+      "upper body, surprised expression, wide eyes, front view",
+      "full body, back against tree, relaxed, one knee up",
+      "portrait, profile view, side face, serious",
+      "full body, mid-stride, hands in pockets, three quarters back view",
+      "upper body, laughing, happy expression, eyes closed",
+      "full body, standing, holding umbrella, looking at viewer",
+      "cowboy shot, arms folded, leaning forward, intense gaze"
+    ]
+  }
+}
