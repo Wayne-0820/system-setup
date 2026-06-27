@@ -1,0 +1,43 @@
+{
+  "arch": "zimage",
+  "comfyui_url": "http://127.0.0.1:8188",
+  "comfyui_input_dir": "D:\\Work\\ComfyUI_portable\\ComfyUI_windows_portable\\ComfyUI\\input",
+
+  "models": {
+    "checkpoint": "moodyProMix_zitV13.safetensors",
+    "clip": "qwen_3_4b.safetensors",
+    "clip_type": "lumina2",
+    "vae": "ae.safetensors"
+  },
+
+  "sampler": {
+    "sampler_name": "res_multistep",
+    "scheduler": "simple",
+    "steps": 8,
+    "cfg": 1.0,
+    "denoise": 0.55,
+    "shift": 3.0,
+    "target_megapixels": 1.0,
+    "resolution_steps": 16
+  },
+
+  "reference_image": "D:\\Media\\AI_Raw\\ComfyUI_Output\\SDXL__00015_.png",
+  "output_prefix": "zimage_batch/img",
+  "seeds_per_prompt": 2,
+  "seed_base": 9000,
+
+  "prompt": {
+    "id_core": "a young man, moody cinematic lighting, highly detailed",
+    "negative": "worst quality, low quality, blurry, deformed, extra limbs, text, watermark",
+    "variations": [
+      "full body, standing on a city street, daytime",
+      "upper body portrait, looking at viewer, soft light",
+      "full body, walking in a park, green trees",
+      "close-up portrait, face focus, dramatic lighting",
+      "full body, sitting on stone steps, relaxed",
+      "cowboy shot, rooftop at sunset, golden hour",
+      "full body, standing in the rain, holding an umbrella",
+      "upper body, indoor cafe, warm light"
+    ]
+  }
+}
