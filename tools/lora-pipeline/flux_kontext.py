@@ -69,16 +69,21 @@ def build_graph(cfg, instruction, seed, prefix, ref_names):
         canvas_ref = ["14", 0]
     else:
         canvas_ref = first_enc
-    # optional LoRA stack (model-only for Flux/Kontext: UNet side; most Flux LoRAs are
-    # UNet-only). Empty list -> model_src stays ["1", 0] (graph identical to no-LoRA).
+    # optional LoRA stack: UNETLoader MODEL + DualCLIPLoader CLIP -> chained LoraLoader(s).
+    # Most Flux LoRAs are UNet-only (strength_clip is then a no-op), but some also train
+    # the text encoder; threading clip too lets those apply. Empty list -> sources stay
+    # ["1",0]/["2",0] (graph identical to no-LoRA).
     loras = m.get("loras", [])
-    model_src = ["1", 0]
+    model_src, clip_src = ["1", 0], ["2", 0]
     for i, lo in enumerate(loras):
         lid = "1L_%d" % i
-        g[lid] = {"class_type": "LoraLoaderModelOnly",
-                  "inputs": {"model": model_src, "lora_name": lo["name"],
-                             "strength_model": lo.get("strength_model", 1.0)}}
-        model_src = [lid, 0]
+        g[lid] = {"class_type": "LoraLoader",
+                  "inputs": {"model": model_src, "clip": clip_src,
+                             "lora_name": lo["name"],
+                             "strength_model": lo.get("strength_model", 1.0),
+                             "strength_clip": lo.get("strength_clip", 1.0)}}
+        model_src, clip_src = [lid, 0], [lid, 1]
+    g["7"]["inputs"]["clip"] = clip_src
     g["11"] = {"class_type": "KSampler",
                "inputs": {"model": model_src, "positive": ["9", 0], "negative": ["10", 0],
                           "latent_image": canvas_ref, "seed": seed, "steps": s["steps"],
