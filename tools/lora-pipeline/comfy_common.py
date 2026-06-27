@@ -35,6 +35,19 @@ def stage_reference(ref, input_dir):
     return ref
 
 
+def stage_references(refs, input_dir):
+    """Stage one or many references. Accepts a str OR a list of str; returns a LIST of
+    staged basenames (ComfyUI input filenames). Backward compatible: a single string
+    yields a one-element list."""
+    if isinstance(refs, str):
+        refs = [refs]
+    out = []
+    for r in (refs or []):
+        if isinstance(r, str) and r.strip():
+            out.append(stage_reference(r.strip(), input_dir))
+    return out
+
+
 def submit(url, graph, client_id="lora-pipeline"):
     """POST a prompt graph to ComfyUI; return the parsed response (has prompt_id)."""
     body = json.dumps({"prompt": graph, "client_id": client_id}).encode("utf-8")

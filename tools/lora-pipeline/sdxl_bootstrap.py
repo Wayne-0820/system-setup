@@ -20,8 +20,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import comfy_common as cc  # noqa: E402
 
 
-def build_graph(cfg, positive, negative, seed, prefix, ref_name):
-    """Build the SDXL + IPAdapter PLUS workflow (API format)."""
+def build_graph(cfg, positive, negative, seed, prefix, ref_names):
+    """Build the SDXL + IPAdapter PLUS workflow (API format). ref_names is a list of
+    one or more reference filenames (batched into the IPAdapter for a stronger anchor)."""
     m = cfg["models"]
     ip = cfg["ipadapter"]
     s = cfg["sampler"]
@@ -31,9 +32,8 @@ def build_graph(cfg, positive, negative, seed, prefix, ref_name):
         "5": {"class_type": "IPAdapterUnifiedLoader",
               "inputs": {"model": ["4", 0],
                          "preset": m.get("ipadapter_preset", "PLUS (high strength)")}},
-        "6": {"class_type": "LoadImage", "inputs": {"image": ref_name}},
         "7": {"class_type": "IPAdapterAdvanced",
-              "inputs": {"model": ["5", 0], "ipadapter": ["5", 1], "image": ["6", 0],
+              "inputs": {"model": ["5", 0], "ipadapter": ["5", 1],
                          "weight": ip["weight"], "weight_type": ip["weight_type"],
                          "combine_embeds": ip.get("combine_embeds", "concat"),
                          "start_at": ip.get("start_at", 0.0),
@@ -49,6 +49,18 @@ def build_graph(cfg, positive, negative, seed, prefix, ref_name):
                           "cfg": s["cfg"], "sampler_name": s["sampler_name"],
                           "scheduler": s["scheduler"], "denoise": s.get("denoise", 1.0)}},
     }
+    # reference image(s): load each, batch them, feed the batch to the IPAdapter
+    img_refs = []
+    for i, rn in enumerate(ref_names):
+        nid = "6_%d" % i
+        g[nid] = {"class_type": "LoadImage", "inputs": {"image": rn}}
+        img_refs.append([nid, 0])
+    src = img_refs[0]
+    for i in range(1, len(img_refs)):
+        bid = "6b_%d" % i
+        g[bid] = {"class_type": "ImageBatch", "inputs": {"image1": src, "image2": img_refs[i]}}
+        src = [bid, 0]
+    g["7"]["inputs"]["image"] = src
     vae = (m.get("vae") or "").strip()
     if vae:
         g["14"] = {"class_type": "VAELoader", "inputs": {"vae_name": vae}}
@@ -88,15 +100,18 @@ def main():
 
     cfg = cc.load_config(args.config)
     url = cfg.get("comfyui_url", "http://127.0.0.1:8188")
-    ref = cc.stage_reference(cfg["reference_image"], cfg.get("comfyui_input_dir"))
-    print("reference staged as: %s" % ref)
+    refs = cc.stage_references(cfg["reference_image"], cfg.get("comfyui_input_dir"))
+    if not refs:
+        print("no reference image in config")
+        return
+    print("references staged: %s" % ", ".join(refs))
 
     n = ok = fail = 0
     for idx, pos, neg, seed, prefix in iter_jobs(cfg):
         if args.limit and idx >= args.limit:
             break
         try:
-            cc.submit(url, build_graph(cfg, pos, neg, seed, prefix, ref), "sdxl-bootstrap")
+            cc.submit(url, build_graph(cfg, pos, neg, seed, prefix, refs), "sdxl-bootstrap")
             ok += 1
         except Exception as e:  # noqa: BLE001
             fail += 1

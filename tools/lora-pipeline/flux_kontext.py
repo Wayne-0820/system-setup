@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import comfy_common as cc  # noqa: E402
 
 
-def build_graph(cfg, instruction, seed, prefix, ref_name):
+def build_graph(cfg, instruction, seed, prefix, ref_names):
     """Build the Flux Kontext workflow (API format).
 
     Reference image -> FluxKontextImageScale -> VAEEncode -> ReferenceLatent embeds it
@@ -39,17 +39,26 @@ def build_graph(cfg, instruction, seed, prefix, ref_name):
         "2": {"class_type": "DualCLIPLoader",
               "inputs": {"clip_name1": m["clip_l"], "clip_name2": m["clip_t5"], "type": "flux"}},
         "3": {"class_type": "VAELoader", "inputs": {"vae_name": m["vae"]}},
-        "4": {"class_type": "LoadImage", "inputs": {"image": ref_name}},
-        "5": {"class_type": "FluxKontextImageScale", "inputs": {"image": ["4", 0]}},
-        "6": {"class_type": "VAEEncode", "inputs": {"pixels": ["5", 0], "vae": ["3", 0]}},
         "7": {"class_type": "CLIPTextEncode", "inputs": {"clip": ["2", 0], "text": instruction}},
-        "8": {"class_type": "ReferenceLatent", "inputs": {"conditioning": ["7", 0], "latent": ["6", 0]}},
         "9": {"class_type": "FluxGuidance",
-              "inputs": {"conditioning": ["8", 0], "guidance": k.get("guidance", 2.5)}},
+              "inputs": {"conditioning": ["7", 0], "guidance": k.get("guidance", 2.5)}},
         "10": {"class_type": "ConditioningZeroOut", "inputs": {"conditioning": ["7", 0]}},
         "12": {"class_type": "VAEDecode", "inputs": {"samples": ["11", 0], "vae": ["3", 0]}},
         "13": {"class_type": "SaveImage", "inputs": {"images": ["12", 0], "filename_prefix": prefix}},
     }
+    # reference image(s): each -> scale -> encode -> chained ReferenceLatent into conditioning
+    cond = ["7", 0]
+    first_enc = None
+    for i, rn in enumerate(ref_names):
+        li, si, ei, ri = "4_%d" % i, "5_%d" % i, "6_%d" % i, "8_%d" % i
+        g[li] = {"class_type": "LoadImage", "inputs": {"image": rn}}
+        g[si] = {"class_type": "FluxKontextImageScale", "inputs": {"image": [li, 0]}}
+        g[ei] = {"class_type": "VAEEncode", "inputs": {"pixels": [si, 0], "vae": ["3", 0]}}
+        g[ri] = {"class_type": "ReferenceLatent", "inputs": {"conditioning": cond, "latent": [ei, 0]}}
+        cond = [ri, 0]
+        if first_enc is None:
+            first_enc = [ei, 0]
+    g["9"]["inputs"]["conditioning"] = cond
     # canvas (KSampler latent_image source):
     #   reference -> edit the reference latent (canonical, strongest preservation)
     #   empty     -> a blank latent of chosen size (more framing freedom; the variety lever)
@@ -59,7 +68,7 @@ def build_graph(cfg, instruction, seed, prefix, ref_name):
                               "batch_size": 1}}
         canvas_ref = ["14", 0]
     else:
-        canvas_ref = ["6", 0]
+        canvas_ref = first_enc
     g["11"] = {"class_type": "KSampler",
                "inputs": {"model": ["1", 0], "positive": ["9", 0], "negative": ["10", 0],
                           "latent_image": canvas_ref, "seed": seed, "steps": s["steps"],
@@ -94,15 +103,18 @@ def main():
 
     cfg = cc.load_config(args.config)
     url = cfg.get("comfyui_url", "http://127.0.0.1:8188")
-    ref = cc.stage_reference(cfg["reference_image"], cfg.get("comfyui_input_dir"))
-    print("reference staged as: %s" % ref)
+    refs = cc.stage_references(cfg["reference_image"], cfg.get("comfyui_input_dir"))
+    if not refs:
+        print("no reference image in config")
+        return
+    print("references staged: %s" % ", ".join(refs))
 
     n = ok = fail = 0
     for idx, instruction, seed, prefix in iter_jobs(cfg):
         if args.limit and idx >= args.limit:
             break
         try:
-            cc.submit(url, build_graph(cfg, instruction, seed, prefix, ref), "flux-kontext")
+            cc.submit(url, build_graph(cfg, instruction, seed, prefix, refs), "flux-kontext")
             ok += 1
         except Exception as e:  # noqa: BLE001
             fail += 1
