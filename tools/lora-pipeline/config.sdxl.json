@@ -4,7 +4,7 @@
   "comfyui_input_dir": "D:\\Work\\ComfyUI_portable\\ComfyUI_windows_portable\\ComfyUI\\input",
 
   "models": {
-    "checkpoint": "waiIllustriousSDXL_v140.safetensors",
+    "checkpoint": "waiIllustriousSDXL_v170.safetensors",
     "vae": "",
     "ipadapter_preset": "PLUS (high strength)"
   },
