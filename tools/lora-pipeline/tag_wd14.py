@@ -25,6 +25,38 @@ import urllib.request
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import comfy_common as cc  # noqa: E402
 
+
+def _setup_cuda_dlls():
+    """Let onnxruntime's CUDA EP find its CUDA 12 runtime DLLs. The portable's torch
+    ships CUDA 13 (cublasLt64_13 etc.), but onnxruntime needs the CUDA 12 math libs
+    (cublasLt64_12, cufft64_11, ...), so we point it at an isolated CUDA-12 dir
+    (installed once via `pip install --target=<dir> nvidia-cublas-cu12 nvidia-cufft-cu12
+    nvidia-curand-cu12 nvidia-cusolver-cu12 nvidia-cusparse-cu12 nvidia-cuda-runtime-cu12`)
+    plus torch's own lib dir (which has cuDNN 9). MUST run before `import onnxruntime`.
+    No-op if the dir is absent -> the session falls back to CPU. Override via
+    $WD14_CUDA_LIBS. This only affects this tagging subprocess, not ComfyUI itself."""
+    import glob
+
+    dirs = sorted(glob.glob(os.path.join(
+        os.environ.get("WD14_CUDA_LIBS", r"D:\Models\wd14\_onnxgpu_cu12"), "nvidia", "*", "bin")))
+    try:
+        import torch
+
+        dirs.append(os.path.join(os.path.dirname(torch.__file__), "lib"))
+    except Exception:  # noqa: BLE001
+        pass
+    dirs = [d for d in dirs if os.path.isdir(d)]
+    if dirs:
+        os.environ["PATH"] = os.pathsep.join(dirs) + os.pathsep + os.environ.get("PATH", "")
+        for d in dirs:
+            try:
+                os.add_dll_directory(d)
+            except Exception:  # noqa: BLE001
+                pass
+
+
+_setup_cuda_dlls()
+
 import numpy as np  # noqa: E402
 import onnxruntime as ort  # noqa: E402
 from PIL import Image  # noqa: E402
