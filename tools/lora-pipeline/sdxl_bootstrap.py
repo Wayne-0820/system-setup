@@ -49,6 +49,22 @@ def build_graph(cfg, positive, negative, seed, prefix, ref_names):
                           "cfg": s["cfg"], "sampler_name": s["sampler_name"],
                           "scheduler": s["scheduler"], "denoise": s.get("denoise", 1.0)}},
     }
+    # optional LoRA stack: checkpoint MODEL/CLIP -> chained LoraLoader(s) -> consumers.
+    # Applied BEFORE IPAdapter (IPAdapterUnifiedLoader still detects is_sdxl from the
+    # model class). Empty list -> the repoints below are no-ops (graph identical).
+    loras = m.get("loras", [])
+    model_src, clip_src = ["4", 0], ["4", 1]
+    for i, lo in enumerate(loras):
+        lid = "4L_%d" % i
+        g[lid] = {"class_type": "LoraLoader",
+                  "inputs": {"model": model_src, "clip": clip_src,
+                             "lora_name": lo["name"],
+                             "strength_model": lo.get("strength_model", 1.0),
+                             "strength_clip": lo.get("strength_clip", 1.0)}}
+        model_src, clip_src = [lid, 0], [lid, 1]
+    g["5"]["inputs"]["model"] = model_src
+    g["8"]["inputs"]["clip"] = clip_src
+    g["9"]["inputs"]["clip"] = clip_src
     # reference image(s): load each, batch them, feed the batch to the IPAdapter
     img_refs = []
     for i, rn in enumerate(ref_names):

@@ -69,8 +69,18 @@ def build_graph(cfg, instruction, seed, prefix, ref_names):
         canvas_ref = ["14", 0]
     else:
         canvas_ref = first_enc
+    # optional LoRA stack (model-only for Flux/Kontext: UNet side; most Flux LoRAs are
+    # UNet-only). Empty list -> model_src stays ["1", 0] (graph identical to no-LoRA).
+    loras = m.get("loras", [])
+    model_src = ["1", 0]
+    for i, lo in enumerate(loras):
+        lid = "1L_%d" % i
+        g[lid] = {"class_type": "LoraLoaderModelOnly",
+                  "inputs": {"model": model_src, "lora_name": lo["name"],
+                             "strength_model": lo.get("strength_model", 1.0)}}
+        model_src = [lid, 0]
     g["11"] = {"class_type": "KSampler",
-               "inputs": {"model": ["1", 0], "positive": ["9", 0], "negative": ["10", 0],
+               "inputs": {"model": model_src, "positive": ["9", 0], "negative": ["10", 0],
                           "latent_image": canvas_ref, "seed": seed, "steps": s["steps"],
                           "cfg": s["cfg"], "sampler_name": s["sampler_name"],
                           "scheduler": s["scheduler"], "denoise": s.get("denoise", 1.0)}}
